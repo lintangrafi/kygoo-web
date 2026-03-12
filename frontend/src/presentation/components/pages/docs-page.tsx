@@ -3,39 +3,12 @@
 import { useState } from 'react'
 import {
     BookOpen, Rocket, Server, Monitor, Cloud,
-    ChevronRight, Copy, Check, Terminal, FolderTree,
-    FileCode, ArrowRight, ExternalLink
+    ChevronRight, FolderTree,
+    FileCode, ExternalLink
 } from 'lucide-react'
-import { Button } from '@/src/presentation/components/ui/button'
+import CodeBlock from "@/src/presentation/components/ui/code"
+import { ThemeToggle } from '../theme-toggle'
 
-// ─── Copy Button ─────────────────────────────────────────
-function CopyButton({ text }: { text: string }) {
-    const [copied, setCopied] = useState(false)
-    const copy = () => {
-        navigator.clipboard.writeText(text)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-    }
-    return (
-        <button onClick={copy} className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-        </button>
-    )
-}
-
-// ─── Code Block ──────────────────────────────────────────
-function CodeBlock({ code, lang = 'bash' }: { code: string; lang?: string }) {
-    return (
-        <div className="relative rounded-lg border border-border/50 bg-muted/30 overflow-hidden my-4">
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-border/30 bg-muted/20">
-                <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-[11px] text-muted-foreground font-medium">{lang}</span>
-            </div>
-            <CopyButton text={code} />
-            <pre className="p-4 text-sm overflow-x-auto"><code>{code}</code></pre>
-        </div>
-    )
-}
 
 // ─── Section Components ──────────────────────────────────
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -690,6 +663,8 @@ export function DocsPage() {
                                     GitHub Repository
                                 </a>
                             </div>
+
+                            <ThemeToggle />
                         </div>
                     </nav>
 
