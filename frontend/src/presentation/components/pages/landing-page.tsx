@@ -38,6 +38,7 @@ function LandingNavbar() {
         { label: 'Features', href: '#features' },
         { label: 'Stack', href: '#stack' },
         { label: 'Architecture', href: '#architecture' },
+        { label: 'Docs', href: '/docs' },
     ]
 
     return (

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
     X, LayoutDashboard, User, Settings,
-    Shield, LogOut, Users, ShieldCheck, Key, AlertTriangle
+    Shield, LogOut, Users, ShieldCheck, Key, AlertTriangle, BookOpen
 } from 'lucide-react'
 import { SidebarItem, SidebarMenuItem } from './sidebar-item'
 import { cn } from '@/src/lib/utils'
@@ -35,6 +35,11 @@ const menuItems: SidebarMenuItem[] = [
         label: 'Home',
         href: '/home',
         icon: LayoutDashboard,
+    },
+    {
+        label: 'Documentation',
+        href: '/docs',
+        icon: BookOpen,
     },
     {
         label: 'User Management',
