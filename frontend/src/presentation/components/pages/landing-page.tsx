@@ -197,14 +197,10 @@ function HeroSection() {
                         </div>
                         {/* Code Content */}
                         <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
-                            <div className="text-muted-foreground/60">// Quick start — run your backend in seconds</div>
+                            <div className="text-muted-foreground/60">// cmd/api/main.go</div>
                             <div className="mt-2">
                                 <span className="text-purple-400">package</span>{' '}
                                 <span className="text-foreground">main</span>
-                            </div>
-                            <div className="mt-4">
-                                <span className="text-purple-400">import</span>{' '}
-                                <span className="text-emerald-400">&quot;github.com/gofiber/fiber/v2&quot;</span>
                             </div>
                             <div className="mt-4">
                                 <span className="text-purple-400">func</span>{' '}
@@ -212,25 +208,47 @@ function HeroSection() {
                                 <span className="text-foreground">() {'{'}</span>
                             </div>
                             <div className="ml-6">
-                                <span className="text-foreground">app</span>
+                                <span className="text-foreground">godotenv.</span>
+                                <span className="text-blue-400">Load</span>
+                                <span className="text-foreground">()</span>
+                            </div>
+                            <div className="mt-3 ml-6">
+                                <span className="text-muted-foreground/60">// setup server</span>
+                            </div>
+                            <div className="ml-6">
+                                <span className="text-foreground">container, _</span>
                                 <span className="text-muted-foreground"> := </span>
-                                <span className="text-foreground">fiber.</span>
+                                <span className="text-foreground">containerPkg.</span>
                                 <span className="text-blue-400">New</span>
                                 <span className="text-foreground">()</span>
                             </div>
-                            <div className="mt-2 ml-6">
-                                <span className="text-foreground">app.</span>
-                                <span className="text-blue-400">Get</span>
-                                <span className="text-foreground">(</span>
-                                <span className="text-emerald-400">&quot;/api/health&quot;</span>
-                                <span className="text-foreground">, handler)</span>
+                            <div className="ml-6">
+                                <span className="text-foreground">container.</span>
+                                <span className="text-blue-400">Invoke</span>
+                                <span className="text-foreground">(Start)</span>
                             </div>
-                            <div className="mt-2 ml-6">
-                                <span className="text-foreground">app.</span>
-                                <span className="text-blue-400">Listen</span>
+                            <div className="mt-3 ml-6">
+                                <span className="text-muted-foreground/60">// add quit signal</span>
+                            </div>
+                            <div className="ml-6">
+                                <span className="text-foreground">quit</span>
+                                <span className="text-muted-foreground"> := </span>
+                                <span className="text-purple-400">make</span>
                                 <span className="text-foreground">(</span>
-                                <span className="text-emerald-400">&quot;:8080&quot;</span>
+                                <span className="text-purple-400">chan</span>
+                                <span className="text-foreground"> os.Signal, </span>
+                                <span className="text-amber-400">1</span>
                                 <span className="text-foreground">)</span>
+                            </div>
+                            <div className="ml-6">
+                                <span className="text-foreground">signal.</span>
+                                <span className="text-blue-400">Notify</span>
+                                <span className="text-foreground">(quit, os.Interrupt)</span>
+                            </div>
+                            <div className="ml-6">
+                                <span className="text-foreground">container.</span>
+                                <span className="text-blue-400">Invoke</span>
+                                <span className="text-foreground">(Shutdown)</span>
                             </div>
                             <div className="text-foreground">{'}'}</div>
                         </div>
