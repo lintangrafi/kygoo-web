@@ -63,7 +63,7 @@ export default function UsersPage() {
 
     // API hooks
     const { data: usersData, isLoading } = useUsers(queryParams);
-    const { data: deletedUsersData, isLoading: isLoadingDeleted } = useDeletedUsers(deletedQueryParams);
+    const { data: deletedUsersData, isLoading: isLoadingDeleted, refetch: refetchDeletedUsersData } = useDeletedUsers(deletedQueryParams);
     const createUser = useCreateUser();
     const updateUser = useUpdateUser();
     const deleteUser = useDeleteUser();
@@ -130,6 +130,7 @@ export default function UsersPage() {
             await deleteUser.mutateAsync(selectedUser.id);
             setIsDeleteDialogOpen(false);
             setSelectedUser(null);
+            refetchDeletedUsersData();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to delete user');
         }
