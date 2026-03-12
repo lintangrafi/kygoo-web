@@ -53,17 +53,9 @@ export function Providers({ children }: { children: ReactNode }) {
                     {/* Animated Logo */}
                     <div className="relative">
                         <div className="absolute inset-0 animate-ping opacity-20">
-                            <div className="h-16 w-16 text-emerald-500">
-                                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                    <path clipRule="evenodd" d="M24 4L44 24L24 44L4 24L24 4ZM24 14V34L34 24L24 14Z" fill="currentColor" fillRule="evenodd" />
-                                </svg>
-                            </div>
+                            <img src="/gns.png" alt="GNS" className="h-16 w-16 rounded dark:invert" />
                         </div>
-                        <div className="h-16 w-16 text-emerald-500 animate-pulse">
-                            <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                <path clipRule="evenodd" d="M24 4L44 24L24 44L4 24L24 4ZM24 14V34L34 24L24 14Z" fill="currentColor" fillRule="evenodd" />
-                            </svg>
-                        </div>
+                        <img src="/gns.png" alt="GNS" className="h-16 w-16 rounded animate-pulse dark:invert" />
                     </div>
 
                     {/* Brand Name */}

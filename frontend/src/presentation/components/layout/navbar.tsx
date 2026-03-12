@@ -25,9 +25,7 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
 
                 {/* Logo (visible on mobile when sidebar is hidden) */}
                 <div className="flex items-center space-x-2 lg:hidden">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <span className="text-xl font-bold">Q</span>
-                    </div>
+                    <img src="/gns.png" alt="GNS" className="h-8 w-8 rounded-lg dark:invert" />
                     <span className="text-xl font-bold">GNS</span>
                 </div>
 

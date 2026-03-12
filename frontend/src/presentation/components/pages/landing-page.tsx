@@ -50,12 +50,7 @@ function LandingNavbar() {
             <div className="mx-auto max-w-6xl flex items-center justify-between px-6 h-16">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2.5 group">
-                    <div className="relative flex h-8 w-8 items-center justify-center">
-                        <div className="absolute inset-0 rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500/30 transition-colors" />
-                        <svg className="h-5 w-5 text-emerald-500 relative" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path clipRule="evenodd" d="M24 4L44 24L24 44L4 24L24 4ZM24 14V34L34 24L24 14Z" fill="currentColor" fillRule="evenodd" />
-                        </svg>
-                    </div>
+                    <img src="/gns.png" alt="GNS" className="h-8 w-8 rounded-lg dark:invert" />
                     <span className="text-lg font-semibold tracking-tight">GNS</span>
                 </Link>
 
@@ -573,9 +568,7 @@ function LandingFooter() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                     {/* Brand */}
                     <div className="flex items-center gap-2">
-                        <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path clipRule="evenodd" d="M24 4L44 24L24 44L4 24L24 4ZM24 14V34L34 24L24 14Z" fill="currentColor" fillRule="evenodd" />
-                        </svg>
+                        <img src="/gns.png" alt="GNS" className="h-5 w-5 rounded dark:invert" />
                         <span className="text-sm text-muted-foreground">
                             GNS © {new Date().getFullYear()}
                         </span>
