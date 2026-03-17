@@ -14,15 +14,12 @@ import {
     X,
     Github,
     Terminal,
-    Layers,
-    ChevronRight,
     Code2,
-    Zap,
-    Box
 } from 'lucide-react'
 import { ThemeToggle } from '@/src/presentation/components/theme-toggle'
 import { Button } from '@/src/presentation/components/ui/button'
 import { useDemoRoute } from '@/src/lib/demo/use-demo-route'
+import { GoIcon, NextjsIcon, ShadcnIcon } from '../ui/icons/icon'
 
 // ─── Navbar ──────────────────────────────────────────────
 function LandingNavbar() {
@@ -263,7 +260,7 @@ const techStack = [
     {
         name: 'Go',
         description: 'High-performance backend with Fiber framework, clean architecture, and built-in concurrency.',
-        icon: Terminal,
+        icon: GoIcon,
         tags: ['Fiber', 'REST API', 'Clean Arch'],
         color: 'from-cyan-500 to-blue-500',
         iconBg: 'bg-cyan-500/10 text-cyan-500',
@@ -271,7 +268,7 @@ const techStack = [
     {
         name: 'Next.js',
         description: 'React framework with server components, file-based routing, and optimized performance out of the box.',
-        icon: Layers,
+        icon: NextjsIcon,
         tags: ['React 19', 'App Router', 'SSR'],
         color: 'from-foreground to-foreground/70',
         iconBg: 'bg-foreground/10 text-foreground',
@@ -279,7 +276,7 @@ const techStack = [
     {
         name: 'shadcn/ui',
         description: 'Beautiful, accessible components built on Radix UI with Tailwind CSS for rapid UI development.',
-        icon: Box,
+        icon: ShadcnIcon,
         tags: ['Tailwind v4', 'Radix UI', 'Dark Mode'],
         color: 'from-emerald-500 to-teal-500',
         iconBg: 'bg-emerald-500/10 text-emerald-500',
@@ -310,7 +307,7 @@ function TechStackSection() {
                         >
                             {/* Icon */}
                             <div className={`inline-flex items-center justify-center h-11 w-11 rounded-lg ${tech.iconBg} mb-5`}>
-                                <tech.icon className="h-5 w-5" />
+                                <tech.icon className="h-8 w-8" />
                             </div>
 
                             {/* Title */}
