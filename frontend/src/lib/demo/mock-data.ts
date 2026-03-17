@@ -135,7 +135,7 @@ export const MOCK_DELETED_USERS: User[] = [
   {
     id: 'demo-user-del-001',
     email: 'former@gns-demo.com',
-    name: 'Ahmad Deleted',
+    name: 'Doni',
     avatar_url: '',
     is_oauth: false,
     is_active: false,
@@ -147,7 +147,7 @@ export const MOCK_DELETED_USERS: User[] = [
   {
     id: 'demo-user-del-002',
     email: 'removed@gns-demo.com',
-    name: 'Lisa Removed',
+    name: 'Lisa',
     avatar_url: '',
     is_oauth: true,
     oauth_provider: 'google',
