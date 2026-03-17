@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Get locale from cookie or default to 'en'
   const locale = request.cookies.get('NEXT_LOCALE')?.value || 'en';
   
@@ -12,6 +12,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Skip middleware for static files and API routes
+  // Skip proxy for static files and API routes
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
