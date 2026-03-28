@@ -5,7 +5,10 @@ import (
 	"go.uber.org/dig"
 
 	"github.com/base-go/backend/internal/auth"
+	"github.com/base-go/backend/internal/contact"
+	"github.com/base-go/backend/internal/photobooth"
 	"github.com/base-go/backend/internal/rbac"
+	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/cache"
 	"github.com/base-go/backend/pkg/database"
 	"github.com/base-go/backend/pkg/router"
@@ -50,6 +53,73 @@ func New() (*dig.Container, error) {
 	}
 
 	if err := container.Provide(rbac.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// studio content module
+	if err := container.Provide(studiocontent.NewThemeRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(studiocontent.NewTemplateRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(studiocontent.NewThemeService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(studiocontent.NewTemplateService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(studiocontent.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// photobooth module
+	if err := container.Provide(photobooth.NewPackageRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(photobooth.NewEventRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(photobooth.NewEventImageRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(photobooth.NewPackageService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(photobooth.NewEventService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(photobooth.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// contact module
+	if err := container.Provide(contact.NewInquiryRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(contact.NewLandingRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(contact.NewInquiryService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(contact.NewLandingService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(contact.NewHandler); err != nil {
 		return nil, err
 	}
 

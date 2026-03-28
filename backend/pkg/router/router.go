@@ -5,7 +5,10 @@ import (
 	"net/http"
 
 	"github.com/base-go/backend/internal/auth"
+	"github.com/base-go/backend/internal/contact"
+	"github.com/base-go/backend/internal/photobooth"
 	"github.com/base-go/backend/internal/rbac"
+	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/middleware"
 	"github.com/base-go/backend/pkg/response"
 	"github.com/go-chi/chi/v5"
@@ -21,6 +24,9 @@ func SetupRoutes(
 	authHandler auth.Handler,
 	rbacHandler rbac.Handler,
 	rbacRepo rbac.Repository,
+	studioHandler *studiocontent.Handler,
+	photoboothHandler *photobooth.Handler,
+	contactHandler *contact.Handler,
 ) *chi.Mux {
 	mux := chi.NewRouter()
 
@@ -145,6 +151,11 @@ func SetupRoutes(
 			})
 		})
 	})
+
+	// Register other domain routes
+	studioHandler.RegisterRoutes(mux)
+	photoboothHandler.RegisterRoutes(mux)
+	contactHandler.RegisterRoutes(mux)
 
 	return mux
 }
