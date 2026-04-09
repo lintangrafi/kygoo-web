@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/src/application/hooks/use-auth';
+import { useAuthStore } from '@/src/infrastructure/stores/auth-store';
 import { Button } from '@/src/presentation/components/ui/button';
 import { Input } from '@/src/presentation/components/ui/input';
 import { Label } from '@/src/presentation/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/presentation/components/ui/card';
 import { Alert, AlertDescription } from '@/src/presentation/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+
+const CMS_ROLES = new Set(['Admin', 'Super Admin', 'admin', 'super_admin']);
 
 export default function LoginPage() {
     const router = useRouter();
@@ -19,13 +22,27 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
 
         try {
             await login({ email, password });
-            router.push('/home');
+            const currentUser = useAuthStore.getState().user;
+            const roles = currentUser?.roles ?? [];
+            const hasCmsAccess = roles.some(role => CMS_ROLES.has(role));
+
+            if (typeof window !== 'undefined') {
+                if (hasCmsAccess) {
+                    localStorage.setItem('cms_logged_in', 'true');
+                    document.cookie = 'cms_logged_in=true; path=/; max-age=28800; samesite=lax';
+                } else {
+                    localStorage.removeItem('cms_logged_in');
+                    document.cookie = 'cms_logged_in=; path=/; max-age=0; samesite=lax';
+                }
+            }
+
+            router.replace(hasCmsAccess ? '/cms/dashboard' : '/home');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         }

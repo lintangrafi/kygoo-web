@@ -28,7 +28,53 @@
     "register": "Register",
     "profile": "Profile",
     "preferences": "Preferences",
-    "admin": "Admin"
+    "admin": "Admin",
+    "studio": "Studio",
+    "photobooth": "Photobooth",
+    "digital": "Digital",
+    "coffee": "Coffee",
+    "about": "About",
+    "portfolio": "Portfolio",
+    "contact": "Contact"
+  },
+  "home": {
+    "hero": {
+      "title": "Create Unforgettable Moments",
+      "subtitle": "Professional photography, videography, and digital solutions for your events. From weddings to corporate events, we bring your vision to life.",
+      "cta1": "Book Photobooth",
+      "cta2": "Learn More"
+    },
+    "services": {
+      "title": "Our Services",
+      "subtitle": "Discover what we offer"
+    },
+    "cta": {
+      "title": "Ready to Create Magic?",
+      "description": "Contact us on WhatsApp or Instagram to discuss your next event"
+    }
+  },
+  "services": {
+    "studio": {
+      "name": "Studio",
+      "description": "Professional photography and videography with state-of-the-art equipment"
+    },
+    "photobooth": {
+      "name": "Photobooth",
+      "description": "Interactive photo booths with instant prints and digital copies"
+    },
+    "digital": {
+      "name": "Digital",
+      "description": "Web development, design, and digital marketing services"
+    },
+    "coffee": {
+      "name": "Coffee",
+      "description": "Premium coffee experience and catering services"
+    }
+  },
+  "footer": {
+    "services": "Services",
+    "company": "Company",
+    "contact": "Contact"
   },
   "landing": {
     "badge": "Open Source Base Project",

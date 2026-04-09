@@ -3,11 +3,11 @@ version: "3.8"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: gns-postgres-dev
+    container_name: kygoo-postgres-dev
     environment:
-      POSTGRES_USER: ${DB_USER:-gns_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-gns_password}
-      POSTGRES_DB: ${DB_NAME:-gns_db}
+      POSTGRES_USER: ${LOCAL_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${LOCAL_POSTGRES_DB:-postgres}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
@@ -16,14 +16,14 @@ services:
       - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gns_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${LOCAL_POSTGRES_USER:-postgres} -d ${LOCAL_POSTGRES_DB:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: gns-redis-dev
+    container_name: kygoo-redis-dev
     ports:
       - "${CACHE_PORT:-6379}:6379"
     volumes:
@@ -41,7 +41,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: gns-dev
+    container_name: kygoo-api-dev
     ports:
       - "8080:8080"
     volumes:

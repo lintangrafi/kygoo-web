@@ -1,4 +1,4 @@
-# GNS Backend
+# Kygoo Group Backend
 
 Go backend service with Chi router, uber/dig dependency injection, JWT authentication, and RBAC.
 

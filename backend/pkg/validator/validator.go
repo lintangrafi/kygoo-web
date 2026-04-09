@@ -60,3 +60,8 @@ func ValidateStruct(data any) error {
 
 	return errors.New("validation failed")
 }
+
+// Validate keeps backward compatibility for modules calling validator.Validate.
+func Validate(data any) error {
+	return ValidateStruct(data)
+}

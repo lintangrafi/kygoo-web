@@ -1,103 +1,41 @@
 package contact
 
-import (
-	"time"
+import "github.com/google/uuid"
 
-	"github.com/google/uuid"
-	"github.com/kygoo-web/backend/internal/shared/models"
-)
-
-// Contact Request DTOs
 type CreateInquiryRequest struct {
-	Name         string `json:"name" validate:"required,min=1,max=255"`
+	Name         string `json:"name" validate:"required,min=2,max=255"`
 	Email        string `json:"email" validate:"required,email"`
-	Phone        string `json:"phone" validate:"omitempty,min=10"`
+	Phone        string `json:"phone" validate:"required,min=8,max=20"`
 	BusinessLine string `json:"business_line" validate:"required,oneof=studio photobooth digital coffee"`
-	Message      string `json:"message" validate:"required,min=10"`
+	EventType    string `json:"event_type" validate:"required,min=3,max=150"`
+	EventDate    string `json:"event_date" validate:"required,min=4,max=20"`
+	Location     string `json:"location" validate:"required,min=2,max=255"`
+	GuestCount   string `json:"guest_count" validate:"required,min=1,max=50"`
+	BudgetRange  string `json:"budget_range" validate:"required,min=2,max=100"`
+	Notes        string `json:"notes" validate:"omitempty,max=2000"`
+	Message      string `json:"message" validate:"required,min=20,max=4000"`
+	Source       string `json:"source" validate:"omitempty,min=2,max=50"`
 }
 
-type UpdateInquiryRequest struct {
-	Status string `json:"status" validate:"omitempty,oneof=new responded"`
+type UpdateInquiryStatusRequest struct {
+	Status string `json:"status" validate:"required,oneof=new responded closed"`
 }
 
-// Coffee & Digital Landing DTOs
-type UpdateLandingRequest struct {
-	Title       string `json:"title" validate:"omitempty,min=1,max=255"`
-	Subtitle    string `json:"subtitle"`
-	Description string `json:"description"`
-	CTAText     string `json:"cta_text"`
-	Status      string `json:"status" validate:"omitempty,oneof=draft published"`
-}
-
-// Response DTOs
 type InquiryResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Name         string    `json:"name"`
 	Email        string    `json:"email"`
 	Phone        string    `json:"phone"`
 	BusinessLine string    `json:"business_line"`
+	EventType    string    `json:"event_type"`
+	EventDate    string    `json:"event_date"`
+	Location     string    `json:"location"`
+	GuestCount   string    `json:"guest_count"`
+	BudgetRange  string    `json:"budget_range"`
+	Notes        string    `json:"notes"`
 	Message      string    `json:"message"`
 	Status       string    `json:"status"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-type PaginatedInquiriesResponse struct {
-	Items      []InquiryResponse `json:"items"`
-	Total      int               `json:"total"`
-	Page       int               `json:"page"`
-	PageSize   int               `json:"page_size"`
-	TotalPages int               `json:"total_pages"`
-}
-
-type LandingResponse struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Subtitle    string    `json:"subtitle"`
-	Description string    `json:"description"`
-	CTAText     string    `json:"cta_text"`
-	Status      string    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-// Mappers
-func MapInquiryToResponse(inquiry *models.ContactInquiry) *InquiryResponse {
-	return &InquiryResponse{
-		ID:           inquiry.ID,
-		Name:         inquiry.Name,
-		Email:        inquiry.Email,
-		Phone:        inquiry.Phone,
-		BusinessLine: inquiry.BusinessLine,
-		Message:      inquiry.Message,
-		Status:       inquiry.Status,
-		CreatedAt:    inquiry.CreatedAt,
-		UpdatedAt:    inquiry.UpdatedAt,
-	}
-}
-
-func MapCoffeeLandingToResponse(landing *models.CoffeeLanding) *LandingResponse {
-	return &LandingResponse{
-		ID:          landing.ID,
-		Title:       landing.Title,
-		Subtitle:    landing.Subtitle,
-		Description: landing.Description,
-		CTAText:     landing.CTAText,
-		Status:      landing.Status,
-		CreatedAt:   landing.CreatedAt,
-		UpdatedAt:   landing.UpdatedAt,
-	}
-}
-
-func MapDigitalLandingToResponse(landing *models.DigitalLanding) *LandingResponse {
-	return &LandingResponse{
-		ID:          landing.ID,
-		Title:       landing.Title,
-		Subtitle:    landing.Subtitle,
-		Description: landing.Description,
-		CTAText:     landing.CTAText,
-		Status:      landing.Status,
-		CreatedAt:   landing.CreatedAt,
-		UpdatedAt:   landing.UpdatedAt,
-	}
+	Source       string    `json:"source"`
+	CreatedAt    string    `json:"created_at"`
+	UpdatedAt    string    `json:"updated_at"`
 }

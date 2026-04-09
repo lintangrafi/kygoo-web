@@ -10,8 +10,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "GNS - (Go, NextJS, ShadCn)",
-  description: "Base project build with Go, NextJS, ShadCn",
+  title: "Kygoo Group - photography, coffee, and digital services",
+  description: "Kygoo Group - Professional services platform for photography, coffee, and digital services",
 };
 
 export default function RootLayout({

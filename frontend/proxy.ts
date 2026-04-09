@@ -13,6 +13,16 @@ export function proxy(request: NextRequest) {
     const { pathname, search } = request.nextUrl
     const url = request.nextUrl.clone()
 
+    // Lightweight server-side guard for CMS routes.
+    // Cookie is set after successful login on /auth/login.
+    if (pathname.startsWith('/cms/dashboard')) {
+        const hasCmsSession = request.cookies.get('cms_logged_in')?.value === 'true'
+        if (!hasCmsSession) {
+            url.pathname = '/auth/login'
+            return NextResponse.redirect(url)
+        }
+    }
+
     // Check if DEMO mode is enabled via environment variable
     const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 

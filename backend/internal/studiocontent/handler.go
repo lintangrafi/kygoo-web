@@ -6,9 +6,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/kygoo-web/backend/pkg/middleware"
-	"github.com/kygoo-web/backend/pkg/response"
-	"github.com/kygoo-web/backend/pkg/validator"
+	httputils "github.com/base-go/backend/internal/shared/http"
+	"github.com/base-go/backend/pkg/middleware"
+	"github.com/base-go/backend/pkg/response"
+	"github.com/base-go/backend/pkg/validator"
 )
 
 type Handler struct {
@@ -51,11 +52,11 @@ func (h *Handler) GetThemes(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.themeService.GetAllThemes(page, pageSize)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusOK, result)
+	response.ResponseJSON(w, http.StatusOK, result)
 }
 
 // GetThemeByID godoc
@@ -69,17 +70,17 @@ func (h *Handler) GetThemeByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	themeID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid theme ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid theme ID")
 		return
 	}
 
 	theme, err := h.themeService.GetThemeByID(themeID)
 	if err != nil {
-		response.Error(w, http.StatusNotFound, err.Error())
+		response.ResponseError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusOK, theme)
+	response.ResponseJSON(w, http.StatusOK, theme)
 }
 
 // GetTemplatesByThemeID godoc
@@ -93,17 +94,17 @@ func (h *Handler) GetTemplatesByThemeID(w http.ResponseWriter, r *http.Request) 
 	id := chi.URLParam(r, "id")
 	themeID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid theme ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid theme ID")
 		return
 	}
 
 	templates, err := h.templateService.GetTemplatesByThemeID(themeID)
 	if err != nil {
-		response.Error(w, http.StatusNotFound, err.Error())
+		response.ResponseError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusOK, templates)
+	response.ResponseJSON(w, http.StatusOK, templates)
 }
 
 // Admin Endpoints - Protected
@@ -118,23 +119,23 @@ func (h *Handler) GetTemplatesByThemeID(w http.ResponseWriter, r *http.Request) 
 // @Router /api/admin/studio/themes [post]
 func (h *Handler) CreateTheme(w http.ResponseWriter, r *http.Request) {
 	var req CreateThemeRequest
-	if err := response.ParseJSON(r, &req); err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid request body")
+	if err := httputils.DecodeJSON(r.Body, &req); err != nil {
+		response.ResponseError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if err := validator.Validate(req); err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
+		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	theme, err := h.themeService.CreateTheme(&req)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, theme)
+	response.ResponseJSON(w, http.StatusCreated, theme)
 }
 
 // UpdateTheme godoc
@@ -150,28 +151,28 @@ func (h *Handler) UpdateTheme(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	themeID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid theme ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid theme ID")
 		return
 	}
 
 	var req UpdateThemeRequest
-	if err := response.ParseJSON(r, &req); err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid request body")
+	if err := httputils.DecodeJSON(r.Body, &req); err != nil {
+		response.ResponseError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if err := validator.Validate(req); err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
+		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	theme, err := h.themeService.UpdateTheme(themeID, &req)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusOK, theme)
+	response.ResponseJSON(w, http.StatusOK, theme)
 }
 
 // DeleteTheme godoc
@@ -186,12 +187,12 @@ func (h *Handler) DeleteTheme(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	themeID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid theme ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid theme ID")
 		return
 	}
 
 	if err := h.themeService.DeleteTheme(themeID); err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -208,23 +209,23 @@ func (h *Handler) DeleteTheme(w http.ResponseWriter, r *http.Request) {
 // @Router /api/admin/studio/templates [post]
 func (h *Handler) CreateTemplate(w http.ResponseWriter, r *http.Request) {
 	var req CreateTemplateRequest
-	if err := response.ParseJSON(r, &req); err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid request body")
+	if err := httputils.DecodeJSON(r.Body, &req); err != nil {
+		response.ResponseError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if err := validator.Validate(req); err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
+		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	template, err := h.templateService.CreateTemplate(&req)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, template)
+	response.ResponseJSON(w, http.StatusCreated, template)
 }
 
 // UpdateTemplate godoc
@@ -240,28 +241,28 @@ func (h *Handler) UpdateTemplate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	templateID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid template ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid template ID")
 		return
 	}
 
 	var req UpdateTemplateRequest
-	if err := response.ParseJSON(r, &req); err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid request body")
+	if err := httputils.DecodeJSON(r.Body, &req); err != nil {
+		response.ResponseError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	if err := validator.Validate(req); err != nil {
-		response.Error(w, http.StatusBadRequest, err.Error())
+		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	template, err := h.templateService.UpdateTemplate(templateID, &req)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.JSON(w, http.StatusOK, template)
+	response.ResponseJSON(w, http.StatusOK, template)
 }
 
 // DeleteTemplate godoc
@@ -276,12 +277,12 @@ func (h *Handler) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	templateID, err := uuid.Parse(id)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid template ID")
+		response.ResponseError(w, http.StatusBadRequest, "Invalid template ID")
 		return
 	}
 
 	if err := h.templateService.DeleteTemplate(templateID); err != nil {
-		response.Error(w, http.StatusInternalServerError, err.Error())
+		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -305,4 +306,9 @@ func RegisterRoutes(r chi.Router, handler *Handler, jwtMiddleware func(next http
 		ar.Put("/api/admin/studio/templates/{id}", handler.UpdateTemplate)
 		ar.Delete("/api/admin/studio/templates/{id}", handler.DeleteTemplate)
 	})
+}
+
+// RegisterRoutes provides a method form used by the central router package.
+func (h *Handler) RegisterRoutes(r chi.Router) {
+	RegisterRoutes(r, h, middleware.JWTAuthMiddleware)
 }

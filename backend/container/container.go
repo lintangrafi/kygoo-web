@@ -3,10 +3,11 @@ package container
 import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/dig"
+	"gorm.io/gorm"
 
 	"github.com/base-go/backend/internal/auth"
+	"github.com/base-go/backend/internal/businessproject"
 	"github.com/base-go/backend/internal/contact"
-	"github.com/base-go/backend/internal/photobooth"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/cache"
@@ -27,6 +28,10 @@ func New() (*dig.Container, error) {
 
 	// database
 	if err := container.Provide(database.NewDatabase); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(ProvideGormDB); err != nil {
 		return nil, err
 	}
 
@@ -77,49 +82,29 @@ func New() (*dig.Container, error) {
 		return nil, err
 	}
 
-	// photobooth module
-	if err := container.Provide(photobooth.NewPackageRepository); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(photobooth.NewEventRepository); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(photobooth.NewEventImageRepository); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(photobooth.NewPackageService); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(photobooth.NewEventService); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(photobooth.NewHandler); err != nil {
-		return nil, err
-	}
-
 	// contact module
-	if err := container.Provide(contact.NewInquiryRepository); err != nil {
+	if err := container.Provide(contact.NewRepository); err != nil {
 		return nil, err
 	}
 
-	if err := container.Provide(contact.NewLandingRepository); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(contact.NewInquiryService); err != nil {
-		return nil, err
-	}
-
-	if err := container.Provide(contact.NewLandingService); err != nil {
+	if err := container.Provide(contact.NewService); err != nil {
 		return nil, err
 	}
 
 	if err := container.Provide(contact.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// business project module
+	if err := container.Provide(businessproject.NewRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(businessproject.NewService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(businessproject.NewHandler); err != nil {
 		return nil, err
 	}
 
@@ -142,4 +127,8 @@ func ProvideHttpServer(mux *chi.Mux) (server.Server, error) {
 	svr := server.New()
 	svr.WithRoute(mux)
 	return svr, nil
+}
+
+func ProvideGormDB(db database.Database) *gorm.DB {
+	return db.GetDB()
 }

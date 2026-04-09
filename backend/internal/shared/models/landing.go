@@ -45,8 +45,15 @@ type ContactInquiry struct {
 	Email        string     `gorm:"type:varchar(255);not null;index"`
 	Phone        string     `gorm:"type:varchar(20)"`
 	BusinessLine string     `gorm:"type:varchar(50)"` // studio, photobooth, digital, coffee
+	EventType    string     `gorm:"type:varchar(150)"`
+	EventDate    string     `gorm:"type:varchar(20)"`
+	Location     string     `gorm:"type:varchar(255)"`
+	GuestCount   string     `gorm:"type:varchar(50)"`
+	BudgetRange  string     `gorm:"type:varchar(100)"`
+	Notes        string     `gorm:"type:text"`
 	Message      string     `gorm:"type:text;not null"`
 	Status       string     `gorm:"type:varchar(20);default:'new'"` // new, responded
+	Source       string     `gorm:"type:varchar(50);default:'contact_page'"`
 	CreatedAt    time.Time  `gorm:"not null;default:now();index:idx_contact_created;sort:desc"`
 	UpdatedAt    time.Time  `gorm:"not null;default:now()"`
 }

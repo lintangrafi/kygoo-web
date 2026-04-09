@@ -1,12 +1,9 @@
 package models
 
 import (
-	"database/sql/driver"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/datatypes"
 )
 
 // StudioTheme represents a photography studio theme/background

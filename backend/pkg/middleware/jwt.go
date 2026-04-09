@@ -91,6 +91,8 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 		ctxRes.Role = claims.Role
 
 		sharingCtx := context.WithValue(ctx, ContextUser, ctxRes)
+		// Keep compatibility with middleware using legacy "user_context" key.
+		sharingCtx = context.WithValue(sharingCtx, "user_context", ctxRes)
 		next.ServeHTTP(w, r.WithContext(sharingCtx))
 	})
 }

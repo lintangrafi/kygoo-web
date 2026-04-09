@@ -9,7 +9,7 @@
 ## ✅ What's Been Done
 
 ### Infrastructure & Setup
-- ✅ GNS boilerplate cloned and configured
+- ✅ Kygoo Group project cloned and configured
 - ✅ Neon PostgreSQL database connected
 - ✅ `.env` configuration created
 - ✅ Project structure initialized

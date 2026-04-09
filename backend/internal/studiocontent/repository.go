@@ -1,10 +1,8 @@
 package studiocontent
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
-	"github.com/kygoo-web/backend/internal/shared/models"
+	"github.com/base-go/backend/internal/shared/models"
 	"gorm.io/gorm"
 )
 

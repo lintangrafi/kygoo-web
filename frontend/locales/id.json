@@ -29,7 +29,53 @@
     "register": "Daftar",
     "profile": "Profil",
     "preferences": "Preferensi",
-    "admin": "Admin"
+    "admin": "Admin",
+    "studio": "Studio",
+    "photobooth": "Photobooth",
+    "digital": "Digital",
+    "coffee": "Kopi",
+    "about": "Tentang",
+    "portfolio": "Portfolio",
+    "contact": "Kontak"
+  },
+  "home": {
+    "hero": {
+      "title": "Ciptakan Momen Tak Terlupakan",
+      "subtitle": "Layanan fotografi, videografi, dan solusi digital profesional untuk acara Anda. Dari pernikahan hingga acara korporat, kami mewujudkan visi Anda.",
+      "cta1": "Pesan Photobooth",
+      "cta2": "Pelajari Lebih Lanjut"
+    },
+    "services": {
+      "title": "Layanan Kami",
+      "subtitle": "Temukan apa yang kami tawarkan"
+    },
+    "cta": {
+      "title": "Siap Menciptakan Keajaiban?",
+      "description": "Hubungi kami di WhatsApp atau Instagram untuk membahas acara berikutnya"
+    }
+  },
+  "services": {
+    "studio": {
+      "name": "Studio",
+      "description": "Fotografi dan videografi profesional dengan peralatan canggih"
+    },
+    "photobooth": {
+      "name": "Photobooth",
+      "description": "Booth foto interaktif dengan cetak instan dan salinan digital"
+    },
+    "digital": {
+      "name": "Digital",
+      "description": "Pengembangan web, desain, dan layanan pemasaran digital"
+    },
+    "coffee": {
+      "name": "Kopi",
+      "description": "Pengalaman kopi premium dan layanan katering"
+    }
+  },
+  "footer": {
+    "services": "Layanan",
+    "company": "Perusahaan",
+    "contact": "Kontak"
   },
   "landing": {
     "badge": "Proyek Open Source",

@@ -1,12 +1,11 @@
 <p align="center">
-  <img src="frontend/public/gns.png" alt="GNS" width="120" />
-  <img src="frontend/public/logo_icon.png" alt="GNS" width="120" />
+  <img src="frontend/public/logo_icon.png" alt="Kygoo Group" width="120" />
 </p>
 
-<h1 align="center">GNS — Go + Next.js + shadcn/ui</h1>
+<h1 align="center">Kygoo Group — Services Platform</h1>
 
 <p align="center">
-  A production-ready full-stack starter kit with authentication, role-based access control, i18n, and clean architecture.
+  A production-ready platform for photography, coffee, and digital services with authentication, role-based access control, i18n, and clean architecture.
 </p>
 
 <p align="center">

@@ -18,14 +18,12 @@ import {
 } from 'lucide-react'
 import { ThemeToggle } from '@/src/presentation/components/theme-toggle'
 import { Button } from '@/src/presentation/components/ui/button'
-import { useDemoRoute } from '@/src/lib/demo/use-demo-route'
 import { GoIcon, NextjsIcon, ShadcnIcon } from '../ui/icons/icon'
 
 // ─── Navbar ──────────────────────────────────────────────
 function LandingNavbar() {
     const [scrolled, setScrolled] = useState(false)
     const [mobileOpen, setMobileOpen] = useState(false)
-    const { getRoute } = useDemoRoute()
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20)
@@ -37,7 +35,7 @@ function LandingNavbar() {
         { label: 'Features', href: '#features' },
         { label: 'Stack', href: '#stack' },
         { label: 'Architecture', href: '#architecture' },
-        { label: 'Docs', href: getRoute('/docs') },
+        { label: 'Docs', href: '/docs' },
     ]
 
     return (
@@ -71,10 +69,10 @@ function LandingNavbar() {
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-2">
                     <ThemeToggle />
-                    <Link href={getRoute("/auth/login")}>
+                    <Link href="/auth/login">
                         <Button variant="ghost" size="sm">Sign In</Button>
                     </Link>
-                    <Link href={getRoute("/auth/register")}>
+                    <Link href="/auth/register">
                         <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                             Get Started
                         </Button>
@@ -105,10 +103,10 @@ function LandingNavbar() {
                             </a>
                         ))}
                         <div className="pt-3 flex flex-col gap-2 border-t border-border/50 mt-2">
-                            <Link href={getRoute("/auth/login")}>
+                            <Link href="/auth/login">
                                 <Button variant="outline" className="w-full" size="sm">Sign In</Button>
                             </Link>
-                            <Link href={getRoute("/auth/register")}>
+                            <Link href="/auth/register">
                                 <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" size="sm">
                                     Get Started
                                 </Button>
@@ -123,7 +121,6 @@ function LandingNavbar() {
 
 // ─── Hero ────────────────────────────────────────────────
 function HeroSection() {
-    const { getRoute } = useDemoRoute()
     return (
         <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
             {/* Background Glow */}
@@ -160,8 +157,8 @@ function HeroSection() {
 
                     {/* CTAs */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <Link href={getRoute("/auth/register")}>
-                            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white! h-12 px-8 text-base">
+                        <Link href="/auth/register">
+                            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 text-base">
                                 Get Started
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -509,7 +506,6 @@ function ArchitectureSection() {
 
 // ─── CTA ─────────────────────────────────────────────────
 function CtaSection() {
-    const { getRoute } = useDemoRoute()
     return (
         <section className="py-24 md:py-32">
             <div className="mx-auto max-w-6xl px-6">
@@ -543,7 +539,7 @@ function CtaSection() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <Link href={getRoute("/auth/register")}>
+                            <Link href="/auth/register">
                                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8">
                                     Get Started Free
                                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -618,3 +614,4 @@ export function LandingPage() {
         </div>
     )
 }
+

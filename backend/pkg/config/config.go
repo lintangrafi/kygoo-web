@@ -29,7 +29,10 @@ func LoadConfig(path string) {
 			log.Fatal(err)
 		}
 
-		if err := yaml.Unmarshal(data, cfg); err != nil {
+		// Expand ${VAR} placeholders from environment variables before parsing YAML.
+		expanded := os.ExpandEnv(string(data))
+
+		if err := yaml.Unmarshal([]byte(expanded), cfg); err != nil {
 			log.Fatalf("error unmarshalling config: %v", err)
 		}
 	})

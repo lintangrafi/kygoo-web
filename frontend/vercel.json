@@ -1,0 +1,28 @@
+{
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "git": {
+    "deploymentEnabled": true
+  },
+  "env": {
+    "NEXT_PUBLIC_API_URL": {
+      "description": "Backend API URL",
+      "required": true,
+      "example": "https://api.kygoo.group/api"
+    },
+    "NEXT_PUBLIC_APP_URL": {
+      "description": "Frontend application URL",
+      "required": true,
+      "example": "https://kygoo.group"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

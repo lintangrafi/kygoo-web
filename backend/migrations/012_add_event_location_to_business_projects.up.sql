@@ -1,0 +1,1 @@
+ALTER TABLE business_projects ADD COLUMN IF NOT EXISTS event_location VARCHAR(255) NOT NULL DEFAULT '';

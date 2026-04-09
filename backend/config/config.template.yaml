@@ -1,7 +1,7 @@
 app:
-  name: gns-backend
+  name: kygoo-group-backend
   version: 1.0.0
-  description: Backend service for gns application
+  description: Backend service for Kygoo Group
   port: ${APP_PORT}
   burst: ${RATELIMIT_BURST}
   request_per_second: ${RATELIMIT_REQUEST_PER_SECOND}

@@ -9,7 +9,6 @@ import { SidebarItem, SidebarMenuItem } from './sidebar-item'
 import { cn } from '@/src/lib/utils'
 import { Button } from '@/src/presentation/components/ui/button'
 import { useAuth } from '@/src/application/hooks/use-auth'
-import { useDemoRoute } from '@/src/lib/demo/use-demo-route'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -73,7 +72,6 @@ const menuItems: SidebarMenuItem[] = [
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { user, logout } = useAuth()
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
-    const { getRoute } = useDemoRoute()
 
     // Get user initials for avatar
     const getUserInitials = () => {
@@ -117,8 +115,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {/* Sidebar Header */}
                 <div className="flex h-16 items-center justify-between border-b px-4">
                     <div className="flex items-center space-x-2">
-                        <Image src="/gns.png" alt="GNS" className="h-8 w-8 rounded-lg dark:invert" />
-                        <span className="text-xl font-bold">GNS</span>
+                        <Image src="/logo_icon.png" alt="Kygoo Group" className="h-8 w-8 rounded-lg" />
+                        <span className="text-xl font-bold">Kygoo</span>
                     </div>
 
                     {/* Close button (mobile/tablet only) */}
@@ -164,13 +162,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuItem asChild>
-                                <a href={getRoute("/settings/profile")} className="cursor-pointer">
+                                <a href="/settings/profile" className="cursor-pointer">
                                     <User className="mr-2 h-4 w-4" />
                                     <span>Profile</span>
                                 </a>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                                <a href={getRoute("/settings/preference")} className="cursor-pointer">
+                                <a href="/settings/preference" className="cursor-pointer">
                                     <Settings className="mr-2 h-4 w-4" />
                                     <span>Settings</span>
                                 </a>

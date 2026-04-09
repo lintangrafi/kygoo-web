@@ -3,10 +3,11 @@ package router
 import (
 	"compress/zlib"
 	"net/http"
+	"os"
 
 	"github.com/base-go/backend/internal/auth"
+	"github.com/base-go/backend/internal/businessproject"
 	"github.com/base-go/backend/internal/contact"
-	"github.com/base-go/backend/internal/photobooth"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/middleware"
@@ -25,8 +26,8 @@ func SetupRoutes(
 	rbacHandler rbac.Handler,
 	rbacRepo rbac.Repository,
 	studioHandler *studiocontent.Handler,
-	photoboothHandler *photobooth.Handler,
 	contactHandler *contact.Handler,
+	businessProjectHandler *businessproject.Handler,
 ) *chi.Mux {
 	mux := chi.NewRouter()
 
@@ -37,7 +38,7 @@ func SetupRoutes(
 	mux.Use(cmiddleware.NoCache)
 	mux.Use(cmiddleware.GetHead)
 	mux.Use(cmiddleware.Compress(zlib.BestCompression))
-	mux.Use(cmiddleware.AllowContentType("application/json"))
+	mux.Use(cmiddleware.AllowContentType("application/json", "multipart/form-data"))
 	mux.Use(secure.New(secure.Options{
 		FrameDeny:            true,
 		ContentTypeNosniff:   true,
@@ -62,8 +63,12 @@ func SetupRoutes(
 	// set middleware rate limiter
 	mux.Use(middleware.RateLimit(1000, 10))
 
-	// set prefix v1
-	mux.Route("/v1", func(r chi.Router) {
+	if err := os.MkdirAll("uploads", 0755); err == nil {
+		mux.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
+	}
+
+	// set API prefix
+	mux.Route("/api/v1", func(r chi.Router) {
 
 		// Authentication routes (public)
 		r.Route("/auth", func(r chi.Router) {
@@ -154,8 +159,8 @@ func SetupRoutes(
 
 	// Register other domain routes
 	studioHandler.RegisterRoutes(mux)
-	photoboothHandler.RegisterRoutes(mux)
 	contactHandler.RegisterRoutes(mux)
+	businessProjectHandler.RegisterRoutes(mux)
 
 	return mux
 }

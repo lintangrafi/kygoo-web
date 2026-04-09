@@ -60,7 +60,7 @@ migrate-force:
 
 ### Access PostgreSQL shell
 db-shell:
-	docker exec -it gns-postgres-dev psql -U $(DB_USER) -d $(DB_NAME)
+	docker exec -it kygoo-postgres-dev psql -U $(DB_USER) -d $(DB_NAME)
 
 ### Dev with environment variables support
 dev:

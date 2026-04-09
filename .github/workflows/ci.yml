@@ -1,4 +1,4 @@
-name: GNS CI/CD Pipeline
+name: Kygoo Group CI/CD Pipeline
 
 on:
   push:

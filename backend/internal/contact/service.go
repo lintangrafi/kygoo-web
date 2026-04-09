@@ -1,242 +1,109 @@
 package contact
 
 import (
-	"errors"
 	"fmt"
+	"time"
 
+	"github.com/base-go/backend/internal/shared/models"
 	"github.com/google/uuid"
-	"github.com/kygoo-web/backend/internal/shared/models"
 )
 
-type InquiryService interface {
-	CreateInquiry(req *CreateInquiryRequest) (*InquiryResponse, error)
-	GetInquiry(id uuid.UUID) (*InquiryResponse, error)
-	GetInquiries(page, pageSize int, status string) (*PaginatedInquiriesResponse, error)
-	UpdateInquiry(id uuid.UUID, req *UpdateInquiryRequest) (*InquiryResponse, error)
-	DeleteInquiry(id uuid.UUID) error
+type Service interface {
+	Create(req *CreateInquiryRequest) (*InquiryResponse, error)
+	GetRecent(limit int) ([]InquiryResponse, error)
+	UpdateStatus(id uuid.UUID, req *UpdateInquiryStatusRequest) (*InquiryResponse, error)
 }
 
-type LandingService interface {
-	GetCoffeeLanding() (*LandingResponse, error)
-	UpdateCoffeeLanding(req *UpdateLandingRequest) (*LandingResponse, error)
-	GetDigitalLanding() (*LandingResponse, error)
-	UpdateDigitalLanding(req *UpdateLandingRequest) (*LandingResponse, error)
+type service struct {
+	repo Repository
 }
 
-type inquiryService struct {
-	inquiryRepo InquiryRepository
+func NewService(repo Repository) Service {
+	return &service{repo: repo}
 }
 
-type landingService struct {
-	landingRepo LandingRepository
-}
-
-func NewInquiryService(inquiryRepo InquiryRepository) InquiryService {
-	return &inquiryService{inquiryRepo}
-}
-
-func NewLandingService(landingRepo LandingRepository) LandingService {
-	return &landingService{landingRepo}
-}
-
-// Inquiry Service Implementation
-
-func (s *inquiryService) CreateInquiry(req *CreateInquiryRequest) (*InquiryResponse, error) {
-	if req == nil {
-		return nil, errors.New("request cannot be nil")
+func mapInquiryToResponse(inquiry *models.ContactInquiry) *InquiryResponse {
+	return &InquiryResponse{
+		ID:           inquiry.ID,
+		Name:         inquiry.Name,
+		Email:        inquiry.Email,
+		Phone:        inquiry.Phone,
+		BusinessLine: inquiry.BusinessLine,
+		EventType:    inquiry.EventType,
+		EventDate:    inquiry.EventDate,
+		Location:     inquiry.Location,
+		GuestCount:   inquiry.GuestCount,
+		BudgetRange:  inquiry.BudgetRange,
+		Notes:        inquiry.Notes,
+		Message:      inquiry.Message,
+		Status:       inquiry.Status,
+		Source:       inquiry.Source,
+		CreatedAt:    inquiry.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    inquiry.UpdatedAt.Format(time.RFC3339),
 	}
+}
 
-	if req.Name == "" {
-		return nil, errors.New("name is required")
-	}
-
-	if req.Email == "" {
-		return nil, errors.New("email is required")
-	}
-
-	if req.Message == "" {
-		return nil, errors.New("message is required")
-	}
-
+func (s *service) Create(req *CreateInquiryRequest) (*InquiryResponse, error) {
 	inquiry := &models.ContactInquiry{
-		ID:           uuid.New(),
 		Name:         req.Name,
 		Email:        req.Email,
 		Phone:        req.Phone,
 		BusinessLine: req.BusinessLine,
+		EventType:    req.EventType,
+		EventDate:    req.EventDate,
+		Location:     req.Location,
+		GuestCount:   req.GuestCount,
+		BudgetRange:  req.BudgetRange,
+		Notes:        req.Notes,
 		Message:      req.Message,
 		Status:       "new",
+		Source:       req.Source,
+	}
+	if inquiry.Source == "" {
+		inquiry.Source = "contact_page"
 	}
 
-	if err := s.inquiryRepo.Create(inquiry); err != nil {
-		return nil, fmt.Errorf("failed to create inquiry: %w", err)
+	if err := s.repo.Create(inquiry); err != nil {
+		return nil, fmt.Errorf("failed to save inquiry: %w", err)
 	}
 
-	return toInquiryResponse(inquiry), nil
+	return mapInquiryToResponse(inquiry), nil
 }
 
-func (s *inquiryService) GetInquiry(id uuid.UUID) (*InquiryResponse, error) {
-	inquiry, err := s.inquiryRepo.GetByID(id)
+func (s *service) GetRecent(limit int) ([]InquiryResponse, error) {
+	inquiries, err := s.repo.GetRecent(limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch inquiries: %w", err)
+	}
+
+	responses := make([]InquiryResponse, len(inquiries))
+	for i := range inquiries {
+		responses[i] = *mapInquiryToResponse(&inquiries[i])
+	}
+
+	return responses, nil
+}
+
+func (s *service) UpdateStatus(id uuid.UUID, req *UpdateInquiryStatusRequest) (*InquiryResponse, error) {
+	inquiry, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get inquiry: %w", err)
 	}
-
 	if inquiry == nil {
-		return nil, errors.New("inquiry not found")
+		return nil, fmt.Errorf("inquiry not found")
 	}
 
-	return toInquiryResponse(inquiry), nil
-}
+	if err := s.repo.UpdateStatus(id, req.Status); err != nil {
+		return nil, fmt.Errorf("failed to update inquiry status: %w", err)
+	}
 
-func (s *inquiryService) GetInquiries(page, pageSize int, status string) (*PaginatedInquiriesResponse, error) {
-	inquiries, total, err := s.inquiryRepo.GetAll(page, pageSize, status)
+	updated, err := s.repo.GetByID(id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get inquiries: %w", err)
+		return nil, fmt.Errorf("failed to reload inquiry: %w", err)
+	}
+	if updated == nil {
+		return nil, fmt.Errorf("inquiry not found after update")
 	}
 
-	resp := &PaginatedInquiriesResponse{
-		Data:      make([]InquiryResponse, len(inquiries)),
-		Total:     total,
-		Page:      page,
-		PageSize:  pageSize,
-		TotalPage: (total + pageSize - 1) / pageSize,
-	}
-
-	for i, inquiry := range inquiries {
-		resp.Data[i] = *toInquiryResponse(&inquiry)
-	}
-
-	return resp, nil
-}
-
-func (s *inquiryService) UpdateInquiry(id uuid.UUID, req *UpdateInquiryRequest) (*InquiryResponse, error) {
-	if req == nil {
-		return nil, errors.New("request cannot be nil")
-	}
-
-	existing, err := s.inquiryRepo.GetByID(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get inquiry: %w", err)
-	}
-
-	if existing == nil {
-		return nil, errors.New("inquiry not found")
-	}
-
-	if req.Status != "" && (req.Status == "new" || req.Status == "replied" || req.Status == "resolved") {
-		existing.Status = req.Status
-	}
-
-	if err := s.inquiryRepo.Update(id, existing); err != nil {
-		return nil, fmt.Errorf("failed to update inquiry: %w", err)
-	}
-
-	return toInquiryResponse(existing), nil
-}
-
-func (s *inquiryService) DeleteInquiry(id uuid.UUID) error {
-	existing, err := s.inquiryRepo.GetByID(id)
-	if err != nil {
-		return fmt.Errorf("failed to get inquiry: %w", err)
-	}
-
-	if existing == nil {
-		return errors.New("inquiry not found")
-	}
-
-	return s.inquiryRepo.Delete(id)
-}
-
-// Landing Service Implementation
-
-func (s *landingService) GetCoffeeLanding() (*LandingResponse, error) {
-	landing, err := s.landingRepo.GetOrCreateCoffee()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get coffee landing: %w", err)
-	}
-
-	return toLandingResponse(landing.ID, landing.Title, landing.Subtitle, landing.Description, landing.CTAText, landing.Status), nil
-}
-
-func (s *landingService) UpdateCoffeeLanding(req *UpdateLandingRequest) (*LandingResponse, error) {
-	if req == nil {
-		return nil, errors.New("request cannot be nil")
-	}
-
-	existing, err := s.landingRepo.GetOrCreateCoffee()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get coffee landing: %w", err)
-	}
-
-	if req.Title != "" {
-		existing.Title = req.Title
-	}
-
-	if req.Subtitle != "" {
-		existing.Subtitle = req.Subtitle
-	}
-
-	if req.Description != "" {
-		existing.Description = req.Description
-	}
-
-	if req.CTAText != "" {
-		existing.CTAText = req.CTAText
-	}
-
-	if req.Status != "" && (req.Status == "draft" || req.Status == "published") {
-		existing.Status = req.Status
-	}
-
-	if err := s.landingRepo.UpdateCoffee(existing); err != nil {
-		return nil, fmt.Errorf("failed to update coffee landing: %w", err)
-	}
-
-	return toLandingResponse(existing.ID, existing.Title, existing.Subtitle, existing.Description, existing.CTAText, existing.Status), nil
-}
-
-func (s *landingService) GetDigitalLanding() (*LandingResponse, error) {
-	landing, err := s.landingRepo.GetOrCreateDigital()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get digital landing: %w", err)
-	}
-
-	return toLandingResponse(landing.ID, landing.Title, landing.Subtitle, landing.Description, landing.CTAText, landing.Status), nil
-}
-
-func (s *landingService) UpdateDigitalLanding(req *UpdateLandingRequest) (*LandingResponse, error) {
-	if req == nil {
-		return nil, errors.New("request cannot be nil")
-	}
-
-	existing, err := s.landingRepo.GetOrCreateDigital()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get digital landing: %w", err)
-	}
-
-	if req.Title != "" {
-		existing.Title = req.Title
-	}
-
-	if req.Subtitle != "" {
-		existing.Subtitle = req.Subtitle
-	}
-
-	if req.Description != "" {
-		existing.Description = req.Description
-	}
-
-	if req.CTAText != "" {
-		existing.CTAText = req.CTAText
-	}
-
-	if req.Status != "" && (req.Status == "draft" || req.Status == "published") {
-		existing.Status = req.Status
-	}
-
-	if err := s.landingRepo.UpdateDigital(existing); err != nil {
-		return nil, fmt.Errorf("failed to update digital landing: %w", err)
-	}
-
-	return toLandingResponse(existing.ID, existing.Title, existing.Subtitle, existing.Description, existing.CTAText, existing.Status), nil
+	return mapInquiryToResponse(updated), nil
 }
