@@ -12,7 +12,7 @@ auth:
   refresh_token_expiration: 86400 # in seconds
   enforcer_duration_seconds: 3600
 database:
-  host: postgres://postgres:ZoFBNiMSA5itNakHoG79KxXNaZkIFG5wK9MSiaSp5pF7w7OZL7u7vabrsBF3HWAi@o4wqngsbz98gi8vbb0byabrl:5432/postgres
+  host: o4wqngsbz98gi8vbb0byabrl
   port: 5432
   user: postgres
   password: ZoFBNiMSA5itNakHoG79KxXNaZkIFG5wK9MSiaSp5pF7w7OZL7u7vabrsBF3HWAi
