@@ -92,5 +92,10 @@
   "trustedDependencies": [
     "sharp",
     "unrs-resolver"
-  ]
+  ],
+  "overrides": {
+    "next-intl": {
+      "next": "$next"
+    }
+  }
 }
