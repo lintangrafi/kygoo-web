@@ -1,1 +1,27 @@
-
+app:
+  name: kygoo-group-backend
+  version: 1.0.0
+  description: Backend service for Kygoo Group
+  port: 8080
+  burst: 10
+  request_per_second: 1000
+auth:
+  jwt_secret: 
+  refresh_token_secret: 
+  token_expiration: 86400 # in seconds
+  refresh_token_expiration: 86400 # in seconds
+  enforcer_duration_seconds: 3600
+database:
+  host: postgres://postgres:ZoFBNiMSA5itNakHoG79KxXNaZkIFG5wK9MSiaSp5pF7w7OZL7u7vabrsBF3HWAi@o4wqngsbz98gi8vbb0byabrl:5432/postgres
+  port: 5432
+  user: postgres
+  password: ZoFBNiMSA5itNakHoG79KxXNaZkIFG5wK9MSiaSp5pF7w7OZL7u7vabrsBF3HWAi
+  name: kygoodb
+  sslmode: require
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 5 # in minutes
+cache:
+  host: redis
+  port: 6379
+  db: 0
