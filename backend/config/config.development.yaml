@@ -16,7 +16,7 @@ database:
   port: 5432
   user: postgres
   password: ZoFBNiMSA5itNakHoG79KxXNaZkIFG5wK9MSiaSp5pF7w7OZL7u7vabrsBF3HWAi
-  name: kygoodb
+  name: postgres
   sslmode: disable
   max_idle_conns: 10
   max_open_conns: 100
