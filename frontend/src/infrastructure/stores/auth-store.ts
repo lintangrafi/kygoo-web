@@ -2,6 +2,18 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authService, type User, type LoginRequest, type RegisterRequest, type GoogleOAuthRequest, type UpdateProfileRequest, type ChangePasswordRequest } from '@/src/domain/services/auth.service';
 
+function persistLegacyTokens(accessToken: string, refreshToken: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('access_token', accessToken);
+  localStorage.setItem('refresh_token', refreshToken);
+}
+
+function clearLegacyTokens(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+}
+
 interface AuthState {
   user: User | null;
   accessToken: string | null;
@@ -38,6 +50,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
           const response = await authService.login(credentials);
+
+          persistLegacyTokens(response.access_token, response.refresh_token);
           
           set({
             user: response.user,
@@ -56,6 +70,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
           const response = await authService.loginWithGoogle(data);
+
+          persistLegacyTokens(response.access_token, response.refresh_token);
           
           set({
             user: response.user,
@@ -74,6 +90,8 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
           const response = await authService.register(data);
+
+          persistLegacyTokens(response.access_token, response.refresh_token);
           
           set({
             user: response.user,
@@ -102,6 +120,8 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           isAuthenticated: false,
         });
+
+        clearLegacyTokens();
         
         // Redirect to login
         if (typeof window !== 'undefined') {
@@ -118,6 +138,8 @@ export const useAuthStore = create<AuthState>()(
           }
           
           const response = await authService.refreshToken({ refresh_token: refreshToken });
+
+          persistLegacyTokens(response.access_token, response.refresh_token);
           
           set({
             user: response.user,
@@ -166,6 +188,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setTokens: (accessToken: string, refreshToken: string) => {
+        persistLegacyTokens(accessToken, refreshToken);
         set({ accessToken, refreshToken, isAuthenticated: true });
       },
 
