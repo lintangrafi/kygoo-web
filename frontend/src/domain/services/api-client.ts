@@ -1,7 +1,36 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/src/infrastructure/stores/auth-store';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+function resolveApiBaseUrl(rawUrl?: string): string {
+  const fallback = 'http://localhost:8080/api';
+
+  if (!rawUrl) {
+    return fallback;
+  }
+
+  const normalized = rawUrl.trim().replace(/\/+$/, '');
+
+  // Supported inputs:
+  // - https://api.example.com
+  // - https://api.example.com/api
+  // - https://api.example.com/v1
+  // - https://api.example.com/api/v1
+  if (/\/api\/v1$/i.test(normalized)) {
+    return normalized.replace(/\/v1$/i, '');
+  }
+
+  if (/\/v1$/i.test(normalized)) {
+    return normalized.replace(/\/v1$/i, '/api');
+  }
+
+  if (/\/api$/i.test(normalized)) {
+    return normalized;
+  }
+
+  return `${normalized}/api`;
+}
+
+const API_BASE_URL = resolveApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
 
 /**
  * Create axios instance with base configuration

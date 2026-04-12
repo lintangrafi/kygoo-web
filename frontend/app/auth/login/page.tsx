@@ -16,7 +16,7 @@ const CMS_ROLES = new Set(['Admin', 'Super Admin', 'admin', 'super_admin']);
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, loginWithGoogle, isLoading } = useAuth();
+    const { login, loginWithGoogle, isLoading, hasHydrated } = useAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -25,6 +25,11 @@ export default function LoginPage() {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
+
+        if (!hasHydrated) {
+            setError('Initializing session. Please try again in a moment.');
+            return;
+        }
 
         try {
             await login({ email, password });
@@ -42,7 +47,13 @@ export default function LoginPage() {
                 }
             }
 
-            router.replace(hasCmsAccess ? '/cms/dashboard' : '/home');
+            const destination = hasCmsAccess ? '/cms/dashboard' : '/home';
+            router.replace(destination);
+
+            // Fallback for deployment environments where client router state can lag after auth persistence.
+            if (typeof window !== 'undefined') {
+                window.location.assign(destination);
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         }
@@ -80,7 +91,7 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                disabled={isLoading}
+                                disabled={isLoading || !hasHydrated}
                             />
                         </div>
 
@@ -101,14 +112,14 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                disabled={isLoading}
+                                disabled={isLoading || !hasHydrated}
                             />
                         </div>
 
                         <Button
                             type="submit"
                             className="w-full"
-                            disabled={isLoading}
+                            disabled={isLoading || !hasHydrated}
                         >
                             {isLoading ? (
                                 <>

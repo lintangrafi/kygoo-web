@@ -1,6 +1,30 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+function resolveApiBaseUrl(rawUrl?: string): string {
+  const fallback = 'http://localhost:8080/api';
+
+  if (!rawUrl) {
+    return fallback;
+  }
+
+  const normalized = rawUrl.trim().replace(/\/+$/, '');
+
+  if (/\/api\/v1$/i.test(normalized)) {
+    return normalized.replace(/\/v1$/i, '');
+  }
+
+  if (/\/v1$/i.test(normalized)) {
+    return normalized.replace(/\/v1$/i, '/api');
+  }
+
+  if (/\/api$/i.test(normalized)) {
+    return normalized;
+  }
+
+  return `${normalized}/api`;
+}
+
+const API_BASE_URL = resolveApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
 
 export interface ApiResponse<T = any> {
   success: boolean;

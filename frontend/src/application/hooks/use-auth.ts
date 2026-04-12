@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/src/infrastructure/stores/auth-store';
 
+let hydrationTriggered = false;
+
 /**
  * Hook to access authentication state and actions
  */
@@ -24,7 +26,10 @@ export function useAuth() {
 
   // Trigger hydration on mount (client-side only)
   useEffect(() => {
-    useAuthStore.persist.rehydrate();
+    if (!hydrationTriggered && !useAuthStore.getState().hasHydrated) {
+      hydrationTriggered = true;
+      useAuthStore.persist.rehydrate();
+    }
   }, []);
 
   return {
