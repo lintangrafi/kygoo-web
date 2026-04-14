@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { BUSINESS_LINE_MAP } from '@/lib/business-lines';
 import { fetchProjectsByLine } from '@/lib/business-projects-client';
+import { getDefaultBusinessLinePricing, mapPricingApiItemsToCards, sortPricingCards, type BusinessLinePricingCard } from '@/lib/business-line-pricing';
+import { businessLinePricingService } from '@/src/services';
 import {
   BusinessLinePageTemplate,
   type BusinessLineProject,
@@ -12,6 +14,7 @@ import {
 
 export default function DigitalPage() {
   const [digitalProjects, setDigitalProjects] = useState<BusinessLineProject[]>(BUSINESS_LINE_MAP.digital.projects);
+  const [pricingPackages, setPricingPackages] = useState<BusinessLinePricingCard[]>(getDefaultBusinessLinePricing('digital'));
 
   useEffect(() => {
     let mounted = true;
@@ -23,6 +26,22 @@ export default function DigitalPage() {
     };
 
     hydrateProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const hydratePricing = async () => {
+      const response = await businessLinePricingService.listPackages('digital');
+      if (!mounted || response.error || !response.data || response.data.length === 0) return;
+      setPricingPackages(sortPricingCards(mapPricingApiItemsToCards(response.data)));
+    };
+
+    hydratePricing();
 
     return () => {
       mounted = false;
@@ -57,24 +76,7 @@ export default function DigitalPage() {
       services={services}
       projects={digitalProjects}
       pricingTitle="Pricing Plans"
-      pricingPackages={[
-        {
-          name: 'Startup',
-          price: '5,000,000',
-          features: ['Landing Page', 'Responsive Design', 'SEO Basics', '3 Months Support'],
-        },
-        {
-          name: 'Growth',
-          price: '15,000,000',
-          features: ['Full Web App', 'Custom Design', 'Database Setup', 'API Integration', '6 Months Support'],
-          highlight: true,
-        },
-        {
-          name: 'Enterprise',
-          price: 'Custom',
-          features: ['Mobile + Web', 'Advanced Features', 'Dedicated Team', 'Ongoing Support'],
-        },
-      ]}
+      pricingPackages={pricingPackages}
       closingTitle="Ready to build something amazing?"
       closingLead="Let's turn your idea into reality. Contact us for a free consultation."
     />

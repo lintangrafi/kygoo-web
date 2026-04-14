@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { BUSINESS_LINE_MAP } from '@/lib/business-lines';
 import { fetchProjectsByLine } from '@/lib/business-projects-client';
+import { getDefaultBusinessLinePricing, mapPricingApiItemsToCards, sortPricingCards, type BusinessLinePricingCard } from '@/lib/business-line-pricing';
+import { businessLinePricingService } from '@/src/services';
 import {
   BusinessLinePageTemplate,
   type BusinessLineProject,
@@ -12,6 +14,7 @@ import {
 
 export default function StudioPage() {
   const [studioProjects, setStudioProjects] = useState<BusinessLineProject[]>(BUSINESS_LINE_MAP.studio.projects);
+  const [pricingPackages, setPricingPackages] = useState<BusinessLinePricingCard[]>(getDefaultBusinessLinePricing('studio'));
 
   useEffect(() => {
     let mounted = true;
@@ -23,6 +26,22 @@ export default function StudioPage() {
     };
 
     hydrateProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const hydratePricing = async () => {
+      const response = await businessLinePricingService.listPackages('studio');
+      if (!mounted || response.error || !response.data || response.data.length === 0) return;
+      setPricingPackages(sortPricingCards(mapPricingApiItemsToCards(response.data)));
+    };
+
+    hydratePricing();
 
     return () => {
       mounted = false;
@@ -57,59 +76,7 @@ export default function StudioPage() {
       services={services}
       projects={studioProjects}
       pricingTitle="Studio Pricelist"
-      pricingPackages={[
-        {
-          name: 'Snow White',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Clean white setup', 'Soft bright portrait look'],
-        },
-        {
-          name: 'Nassau Blue',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Blue backdrop style', 'Portrait-ready studio look'],
-          highlight: true,
-        },
-        {
-          name: 'Grey Curtain',
-          price: '35K / 5 menit',
-          features: ['50K / 10 menit', 'Curtain-style background', 'Minimal and clean mood'],
-        },
-        {
-          name: 'Livingroom',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Cozy indoor living room feel', 'Soft lifestyle look'],
-        },
-        {
-          name: 'Spotlight Box',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Single subject spotlight', 'Strong studio contrast'],
-        },
-        {
-          name: 'Elevator Vintage',
-          price: '35K / 1 sesi',
-          features: ['50K / 2 sesi', 'Vintage lift-inspired set', 'Retro editorial aesthetic'],
-        },
-        {
-          name: 'Window Background',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Window-frame backdrop', 'Soft natural portrait style'],
-        },
-        {
-          name: 'Beige',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Warm beige tone', 'Neutral and elegant result'],
-        },
-        {
-          name: 'Vintage Box',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Old-school box interior', 'Classic nostalgic composition'],
-        },
-        {
-          name: 'Industrial Wall',
-          price: '50K / 10 menit',
-          features: ['75K / 15 menit', 'Concrete industrial texture', 'Bold urban portrait look'],
-        },
-      ]}
+      pricingPackages={pricingPackages}
       closingTitle="Siap pilih backdrop studio?"
       closingLead="Pilih tema yang paling sesuai, lalu lanjutkan booking untuk sesi foto yang Anda inginkan."
     />

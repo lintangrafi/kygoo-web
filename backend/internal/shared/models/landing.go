@@ -45,6 +45,9 @@ type ContactInquiry struct {
 	Email        string     `gorm:"type:varchar(255);not null;index"`
 	Phone        string     `gorm:"type:varchar(20)"`
 	BusinessLine string     `gorm:"type:varchar(50)"` // studio, photobooth, digital, coffee
+	PackageID    *uuid.UUID `gorm:"type:uuid;index"`
+	PackageName  string     `gorm:"type:varchar(255)"`
+	PackagePriceLabel string `gorm:"type:varchar(120)"`
 	EventType    string     `gorm:"type:varchar(150)"`
 	EventDate    string     `gorm:"type:varchar(20)"`
 	Location     string     `gorm:"type:varchar(255)"`

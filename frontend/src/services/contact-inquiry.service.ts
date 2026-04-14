@@ -8,6 +8,9 @@ export interface ContactInquiryItem {
   email: string;
   phone: string;
   business_line: 'studio' | 'photobooth' | 'digital' | 'coffee';
+  package_id: string | null;
+  package_name: string;
+  package_price_label: string;
   event_type: string;
   event_date: string;
   location: string;
@@ -26,11 +29,14 @@ export interface CreateContactInquiryRequest {
   email: string;
   phone: string;
   business_line: ContactInquiryItem['business_line'];
+  package_id: string;
+  package_name: string;
+  package_price_label: string;
   event_type: string;
   event_date: string;
   location: string;
   guest_count: string;
-  budget_range: string;
+  budget_range?: string;
   notes?: string;
   message: string;
   source?: string;

@@ -8,6 +8,7 @@ import (
 	"github.com/base-go/backend/internal/auth"
 	"github.com/base-go/backend/internal/businessproject"
 	"github.com/base-go/backend/internal/contact"
+	"github.com/base-go/backend/internal/pricing"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/cache"
@@ -79,6 +80,19 @@ func New() (*dig.Container, error) {
 	}
 
 	if err := container.Provide(studiocontent.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// pricing module
+	if err := container.Provide(pricing.NewRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(pricing.NewService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(pricing.NewHandler); err != nil {
 		return nil, err
 	}
 

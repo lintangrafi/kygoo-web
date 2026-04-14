@@ -7,11 +7,14 @@ type CreateInquiryRequest struct {
 	Email        string `json:"email" validate:"required,email"`
 	Phone        string `json:"phone" validate:"required,min=8,max=20"`
 	BusinessLine string `json:"business_line" validate:"required,oneof=studio photobooth digital coffee"`
+	PackageID    string `json:"package_id" validate:"required,min=8,max=36"`
+	PackageName  string `json:"package_name" validate:"required,min=2,max=255"`
+	PackagePriceLabel string `json:"package_price_label" validate:"required,min=1,max=120"`
 	EventType    string `json:"event_type" validate:"required,min=3,max=150"`
 	EventDate    string `json:"event_date" validate:"required,min=4,max=20"`
 	Location     string `json:"location" validate:"required,min=2,max=255"`
 	GuestCount   string `json:"guest_count" validate:"required,min=1,max=50"`
-	BudgetRange  string `json:"budget_range" validate:"required,min=2,max=100"`
+	BudgetRange  string `json:"budget_range" validate:"omitempty,min=2,max=100"`
 	Notes        string `json:"notes" validate:"omitempty,max=2000"`
 	Message      string `json:"message" validate:"required,min=20,max=4000"`
 	Source       string `json:"source" validate:"omitempty,min=2,max=50"`
@@ -27,6 +30,9 @@ type InquiryResponse struct {
 	Email        string    `json:"email"`
 	Phone        string    `json:"phone"`
 	BusinessLine string    `json:"business_line"`
+	PackageID    *uuid.UUID `json:"package_id"`
+	PackageName  string    `json:"package_name"`
+	PackagePriceLabel string `json:"package_price_label"`
 	EventType    string    `json:"event_type"`
 	EventDate    string    `json:"event_date"`
 	Location     string    `json:"location"`

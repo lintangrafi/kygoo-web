@@ -99,6 +99,13 @@ export default function AdminDashboard() {
       color: '#22d3ee',
     },
     {
+      title: 'Pricing CMS',
+      description: 'Kelola price list dan package booking untuk semua lini bisnis.',
+      icon: '💳',
+      href: '/admin/pricing',
+      color: '#f59e0b',
+    },
+    {
       title: 'Orders',
       description: 'View and manage customer orders across all business lines',
       icon: '📦',

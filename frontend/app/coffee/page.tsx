@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { BUSINESS_LINE_MAP } from '@/lib/business-lines';
 import { fetchProjectsByLine } from '@/lib/business-projects-client';
+import { getDefaultBusinessLinePricing, mapPricingApiItemsToCards, sortPricingCards, type BusinessLinePricingCard } from '@/lib/business-line-pricing';
+import { businessLinePricingService } from '@/src/services';
 import {
   BusinessLinePageTemplate,
   type BusinessLineProject,
@@ -12,6 +14,7 @@ import {
 
 export default function CoffeePage() {
   const [coffeeProjects, setCoffeeProjects] = useState<BusinessLineProject[]>(BUSINESS_LINE_MAP.coffee.projects);
+  const [pricingPackages, setPricingPackages] = useState<BusinessLinePricingCard[]>(getDefaultBusinessLinePricing('coffee'));
 
   useEffect(() => {
     let mounted = true;
@@ -23,6 +26,22 @@ export default function CoffeePage() {
     };
 
     hydrateProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const hydratePricing = async () => {
+      const response = await businessLinePricingService.listPackages('coffee');
+      if (!mounted || response.error || !response.data || response.data.length === 0) return;
+      setPricingPackages(sortPricingCards(mapPricingApiItemsToCards(response.data)));
+    };
+
+    hydratePricing();
 
     return () => {
       mounted = false;
@@ -57,24 +76,7 @@ export default function CoffeePage() {
       services={services}
       projects={coffeeProjects}
       pricingTitle="Pricing Plans"
-      pricingPackages={[
-        {
-          name: 'Station',
-          price: '3,500,000',
-          features: ['2 barista', 'Standard menu', 'Basic setup', '3 hours service'],
-        },
-        {
-          name: 'Signature',
-          price: '6,500,000',
-          features: ['3 barista', 'Signature menu', 'Custom cup branding', '5 hours service'],
-          highlight: true,
-        },
-        {
-          name: 'Hospitality',
-          price: 'Custom',
-          features: ['Dedicated crew', 'Premium menu', 'Brand experience', 'Full day coverage'],
-        },
-      ]}
+      pricingPackages={pricingPackages}
       closingTitle="Ready to serve a better event experience?"
       closingLead="Konsultasikan jumlah tamu, venue, dan menu yang Anda butuhkan. Kami akan bantu susun paket yang pas."
     />

@@ -29,6 +29,9 @@ func mapInquiryToResponse(inquiry *models.ContactInquiry) *InquiryResponse {
 		Email:        inquiry.Email,
 		Phone:        inquiry.Phone,
 		BusinessLine: inquiry.BusinessLine,
+		PackageID:    inquiry.PackageID,
+		PackageName:  inquiry.PackageName,
+		PackagePriceLabel: inquiry.PackagePriceLabel,
 		EventType:    inquiry.EventType,
 		EventDate:    inquiry.EventDate,
 		Location:     inquiry.Location,
@@ -44,16 +47,24 @@ func mapInquiryToResponse(inquiry *models.ContactInquiry) *InquiryResponse {
 }
 
 func (s *service) Create(req *CreateInquiryRequest) (*InquiryResponse, error) {
+	packageID, err := uuid.Parse(req.PackageID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid package ID")
+	}
+
 	inquiry := &models.ContactInquiry{
 		Name:         req.Name,
 		Email:        req.Email,
 		Phone:        req.Phone,
 		BusinessLine: req.BusinessLine,
+		PackageID:    &packageID,
+		PackageName:  req.PackageName,
+		PackagePriceLabel: req.PackagePriceLabel,
 		EventType:    req.EventType,
 		EventDate:    req.EventDate,
 		Location:     req.Location,
 		GuestCount:   req.GuestCount,
-		BudgetRange:  req.BudgetRange,
+		BudgetRange:  req.PackageName,
 		Notes:        req.Notes,
 		Message:      req.Message,
 		Status:       "new",

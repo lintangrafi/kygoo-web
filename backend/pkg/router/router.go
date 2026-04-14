@@ -8,6 +8,7 @@ import (
 	"github.com/base-go/backend/internal/auth"
 	"github.com/base-go/backend/internal/businessproject"
 	"github.com/base-go/backend/internal/contact"
+	"github.com/base-go/backend/internal/pricing"
 	"github.com/base-go/backend/internal/rbac"
 	"github.com/base-go/backend/internal/studiocontent"
 	"github.com/base-go/backend/pkg/middleware"
@@ -26,6 +27,7 @@ func SetupRoutes(
 	rbacHandler rbac.Handler,
 	rbacRepo rbac.Repository,
 	studioHandler *studiocontent.Handler,
+	pricingHandler *pricing.Handler,
 	contactHandler *contact.Handler,
 	businessProjectHandler *businessproject.Handler,
 ) *chi.Mux {
@@ -159,6 +161,7 @@ func SetupRoutes(
 
 	// Register other domain routes
 	studioHandler.RegisterRoutes(mux)
+	pricingHandler.RegisterRoutes(mux)
 	contactHandler.RegisterRoutes(mux)
 	businessProjectHandler.RegisterRoutes(mux)
 

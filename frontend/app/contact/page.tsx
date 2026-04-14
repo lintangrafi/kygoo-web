@@ -1,11 +1,19 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Bodoni_Moda, Manrope } from 'next/font/google';
 import { motion } from 'framer-motion';
 import { contactInquiryService } from '@/src/services';
+import { businessLinePricingService, type BusinessLinePackage } from '@/src/services';
+import { getDefaultBusinessLinePricing, type BusinessLineSlug } from '@/lib/business-line-pricing';
 import styles from './page.module.css';
+
+type BookingPackageOption = {
+  id: string;
+  name: string;
+  price_label: string;
+};
 
 const displayFont = Bodoni_Moda({
   subsets: ['latin'],
@@ -24,11 +32,13 @@ type BookingFormState = {
   email: string;
   phone: string;
   businessLine: string;
+  packageId: string;
+  packageName: string;
+  packagePriceLabel: string;
   eventType: string;
   eventDate: string;
   location: string;
   guestCount: string;
-  budgetRange: string;
   notes: string;
   agree: boolean;
 };
@@ -42,24 +52,18 @@ const BUSINESS_LINES = [
   { value: 'coffee', label: 'Kygoo Coffee' },
 ];
 
-const BUDGET_RANGES = [
-  'Di bawah Rp 10 juta',
-  'Rp 10 - 30 juta',
-  'Rp 30 - 75 juta',
-  'Rp 75 - 150 juta',
-  'Di atas Rp 150 juta',
-];
-
 const INITIAL_STATE: BookingFormState = {
   fullName: '',
   email: '',
   phone: '',
   businessLine: 'studio',
+  packageId: '',
+  packageName: '',
+  packagePriceLabel: '',
   eventType: '',
   eventDate: '',
   location: '',
   guestCount: '',
-  budgetRange: '',
   notes: '',
   agree: false,
 };
@@ -71,6 +75,15 @@ const isEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value);
 
 export default function ContactPage() {
   const [form, setForm] = useState<BookingFormState>(INITIAL_STATE);
+  const [packages, setPackages] = useState<BookingPackageOption[]>(
+    getDefaultBusinessLinePricing('studio').map((item) => ({
+      id: item.id || item.name,
+      name: item.name,
+      price_label: item.price_label || item.price,
+    }))
+  );
+  const [packagesLoading, setPackagesLoading] = useState(false);
+  const [packagesError, setPackagesError] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -81,6 +94,67 @@ export default function ContactPage() {
   );
 
   const targetPhoneNumber = form.businessLine === 'studio' ? STUDIO_PHONE_NUMBER : GENERAL_PHONE_NUMBER;
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadPackages = async () => {
+      setPackagesLoading(true);
+      setPackagesError('');
+
+      const response = await businessLinePricingService.listPackages(form.businessLine as BusinessLineSlug);
+      if (!mounted) {
+        return;
+      }
+
+      if (response.error || !response.data || response.data.length === 0) {
+        setPackages(
+          getDefaultBusinessLinePricing(form.businessLine as BusinessLineSlug).map((item) => ({
+            id: item.id || item.name,
+            name: item.name,
+            price_label: item.price_label || item.price,
+          }))
+        );
+        setPackagesError(response.message || response.error || 'Gagal memuat package dari CMS.');
+      } else {
+        setPackages(
+          response.data.map((item: BusinessLinePackage) => ({
+            id: item.id,
+            name: item.name,
+            price_label: item.price_label,
+          }))
+        );
+      }
+
+      setPackagesLoading(false);
+    };
+
+    loadPackages();
+
+    return () => {
+      mounted = false;
+    };
+  }, [form.businessLine]);
+
+  useEffect(() => {
+    if (packages.length === 0) {
+      return;
+    }
+
+    setForm((prev) => {
+      if (prev.packageId && packages.some((item) => item.id === prev.packageId)) {
+        return prev;
+      }
+
+      const firstPackage = packages[0];
+      return {
+        ...prev,
+        packageId: firstPackage.id,
+        packageName: firstPackage.name,
+        packagePriceLabel: firstPackage.price_label,
+      };
+    });
+  }, [packages]);
 
   const validate = () => {
     const nextErrors: FormErrors = {};
@@ -106,8 +180,8 @@ export default function ContactPage() {
     if (!form.guestCount.trim()) {
       nextErrors.guestCount = 'Isi estimasi jumlah tamu/audiens.';
     }
-    if (!form.budgetRange) {
-      nextErrors.budgetRange = 'Pilih range budget.';
+    if (!form.packageId) {
+      nextErrors.packageId = 'Pilih paket yang sesuai.';
     }
     if (!form.agree) {
       nextErrors.agree = 'Perlu persetujuan untuk lanjut booking.';
@@ -121,6 +195,30 @@ export default function ContactPage() {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type } = event.target;
+
+    if (name === 'businessLine') {
+      setForm((prev) => ({
+        ...prev,
+        businessLine: value,
+        packageId: '',
+        packageName: '',
+        packagePriceLabel: '',
+      }));
+      setErrors((prev) => ({ ...prev, [name]: undefined, packageId: undefined }));
+      return;
+    }
+
+    if (name === 'packageId') {
+      const selectedPackage = packages.find((item) => item.id === value);
+      setForm((prev) => ({
+        ...prev,
+        packageId: value,
+        packageName: selectedPackage?.name ?? '',
+        packagePriceLabel: selectedPackage?.price_label ?? '',
+      }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+      return;
+    }
 
     setForm((prev) => ({
       ...prev,
@@ -143,11 +241,14 @@ export default function ContactPage() {
       email: form.email,
       phone: form.phone,
       business_line: form.businessLine as 'studio' | 'photobooth' | 'digital' | 'coffee',
+      package_id: form.packageId,
+      package_name: form.packageName,
+      package_price_label: form.packagePriceLabel,
       event_type: form.eventType,
       event_date: form.eventDate,
       location: form.location,
       guest_count: form.guestCount,
-      budget_range: form.budgetRange,
+      budget_range: form.packageName,
       notes: form.notes,
       message: [
         'Halo tim Kygoo, saya ingin booking layanan.',
@@ -156,11 +257,12 @@ export default function ContactPage() {
         `Email: ${form.email}`,
         `WhatsApp: ${form.phone}`,
         `Lini bisnis: ${selectedLine}`,
+        `Paket: ${form.packageName} (${form.packagePriceLabel})`,
         `Jenis event: ${form.eventType}`,
         `Tanggal: ${form.eventDate}`,
         `Lokasi: ${form.location}`,
         `Estimasi tamu: ${form.guestCount}`,
-        `Budget: ${form.budgetRange}`,
+        `Budget/Paket: ${form.packageName} - ${form.packagePriceLabel}`,
         `Catatan: ${form.notes || '-'}`,
       ].join('\n'),
       source: 'contact_page',
@@ -173,11 +275,12 @@ export default function ContactPage() {
       `Email: ${form.email}`,
       `WhatsApp: ${form.phone}`,
       `Lini bisnis: ${selectedLine}`,
+      `Paket: ${form.packageName} (${form.packagePriceLabel})`,
       `Jenis event: ${form.eventType}`,
       `Tanggal: ${form.eventDate}`,
       `Lokasi: ${form.location}`,
       `Estimasi tamu: ${form.guestCount}`,
-      `Budget: ${form.budgetRange}`,
+      `Budget/Paket: ${form.packageName} - ${form.packagePriceLabel}`,
       `Catatan: ${form.notes || '-'}`,
     ].join('\n');
 
@@ -253,6 +356,12 @@ export default function ContactPage() {
             <strong>4 unit terintegrasi</strong>
           </article>
         </div>
+
+          <div className={styles.contactMeta}>
+            <p>CMS pricing</p>
+            <span>{packagesLoading ? 'Memuat package...' : `${packages.length} package aktif`}</span>
+            {packagesError && <small>{packagesError}</small>}
+          </div>
       </section>
 
       <section className={styles.contentGrid}>
@@ -374,16 +483,19 @@ export default function ContactPage() {
             </label>
 
             <label>
-              Budget range
-              <select name="budgetRange" value={form.budgetRange} onChange={handleChange}>
-                <option value="">Pilih budget</option>
-                {BUDGET_RANGES.map((budget) => (
-                  <option key={budget} value={budget}>
-                    {budget}
+              Pilih paket
+              <select name="packageId" value={form.packageId} onChange={handleChange} disabled={packagesLoading}>
+                <option value="">Pilih paket untuk lini ini</option>
+                {packages.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} - {item.price_label}
                   </option>
                 ))}
               </select>
-              {errors.budgetRange && <small>{errors.budgetRange}</small>}
+              {errors.packageId && <small>{errors.packageId}</small>}
+              {!packagesLoading && packages.length > 0 && (
+                <small>Paket menyesuaikan lini bisnis yang Anda pilih.</small>
+              )}
             </label>
 
             <label className={styles.fullWidth}>
