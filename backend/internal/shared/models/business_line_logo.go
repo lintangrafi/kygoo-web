@@ -15,6 +15,8 @@ type BusinessLineLogo struct {
 	ImageURL     string     `gorm:"type:text;not null"`
 	AltText      string     `gorm:"type:varchar(255)"`
 	DisplayOrder int        `gorm:"type:int;default:0;index:idx_business_line_logos_lookup,priority:3"`
+	DisplayWidth int        `gorm:"type:int;default:150"`
+	DisplayHeight int       `gorm:"type:int;default:64"`
 	IsActive     bool       `gorm:"type:boolean;default:true;index"`
 	CreatedAt    time.Time  `gorm:"not null;default:now()"`
 	UpdatedAt    time.Time  `gorm:"not null;default:now()"`

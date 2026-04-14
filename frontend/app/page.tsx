@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import styles from './landing-main.module.css';
 import { BUSINESS_LINES, mergeProjectsIntoLines } from '@/lib/business-lines';
 import { fetchAllProjectsMap } from '@/lib/business-projects-client';
+import { siteBrandingService, type SiteBranding } from '@/src/services';
 
 const displayFont = Cormorant_Garamond({
   subsets: ['latin'],
@@ -45,11 +46,21 @@ function formatDate(day?: number, month?: number, year?: string): string {
 export default function HomePage() {
   const [businessLines, setBusinessLines] = useState(BUSINESS_LINES);
   const [activeSlug, setActiveSlug] = useState<(typeof businessLines)[number]['slug']>('studio');
+  const [branding, setBranding] = useState<SiteBranding | null>(null);
   const activeLine = businessLines.find(line => line.slug === activeSlug) ?? businessLines[0];
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     let mounted = true;
+
+    const hydrateBranding = async () => {
+      const response = await siteBrandingService.getCurrent();
+      if (!mounted || response.error || !response.data) {
+        return;
+      }
+
+      setBranding(response.data);
+    };
 
     const hydrateProjects = async () => {
       const projectMap = await fetchAllProjectsMap();
@@ -66,6 +77,7 @@ export default function HomePage() {
       }
     };
 
+    void hydrateBranding();
     hydrateProjects();
 
     return () => {
@@ -85,7 +97,18 @@ export default function HomePage() {
 
       <section className={styles.heroWrap}>
         <header className={styles.topbar}>
-          <p className={styles.brand}>KYGOO GROUP</p>
+          <div className={styles.brandWrap}>
+            <img
+              src={branding?.main_logo_url || '/logo_icon.png'}
+              alt={branding?.main_logo_alt || 'Kygoo Group'}
+              className={branding?.header_logo_rounded === false ? styles.brandLogoRounded : styles.brandLogoCircle}
+              style={{
+                width: `${branding?.main_logo_size || 40}px`,
+                height: `${branding?.main_logo_size || 40}px`,
+              }}
+            />
+            <p className={styles.brand}>KYGOO GROUP</p>
+          </div>
           <nav className={styles.quickNav} aria-label="Business navigation">
             {businessLines.map(line => (
               <Link key={line.slug} href={`/${line.slug}`}>

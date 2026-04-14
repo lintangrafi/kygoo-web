@@ -65,6 +65,7 @@ export default function CoffeePage() {
 
   return (
     <BusinessLinePageTemplate
+      businessSlug="coffee"
       businessName="Coffee"
       accent="#d97706"
       secondaryAccent="#fbbf24"

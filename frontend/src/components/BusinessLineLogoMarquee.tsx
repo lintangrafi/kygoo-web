@@ -23,13 +23,21 @@ function LogoRow({ title, items, accent }: BusinessLineLogoMarqueeProps['groups'
 					{track.map((logo, index) => (
 						<div
 							key={`${logo.id}-${index}`}
-							className="flex h-20 min-w-[180px] items-center justify-center rounded-2xl border border-white/10 bg-slate-950/80 px-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
-							style={{ boxShadow: accent ? `0 0 24px ${accent}18` : undefined }}
+							className="flex items-center justify-center rounded-2xl border border-white/10 bg-slate-950/80 px-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]"
+							style={{
+								minWidth: `${Math.max(180, (logo.display_width || 150) + 30)}px`,
+								height: `${Math.max(80, (logo.display_height || 64) + 16)}px`,
+								boxShadow: accent ? `0 0 24px ${accent}18` : undefined,
+							}}
 						>
 							<img
 								src={logo.image_url}
 								alt={logo.alt_text || logo.name}
-								className="max-h-12 max-w-[150px] object-contain opacity-90 transition-transform duration-300 hover:scale-105"
+								className="object-contain opacity-90 transition-transform duration-300 hover:scale-105"
+								style={{
+									width: `${logo.display_width || 150}px`,
+									height: `${logo.display_height || 64}px`,
+								}}
 							/>
 						</div>
 					))}

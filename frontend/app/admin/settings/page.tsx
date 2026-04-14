@@ -9,11 +9,10 @@ import {
 	type CreateBusinessLineLogoRequest,
 	type UpdateBusinessLineLogoRequest,
 	siteBrandingService,
-	type SiteBranding,
 	type UpdateSiteBrandingRequest,
 } from '@/src/services';
 import { type BusinessLineSlug } from '@/lib/business-line-pricing';
-import { type LogoSection } from '@/src/services/branding.service';
+import { type AnyLogoSection } from '@/src/services/branding.service';
 
 const containerVariants = {
 	hidden: { opacity: 0 },
@@ -33,17 +32,21 @@ type SiteBrandingForm = {
 	siteDescription: string;
 	mainLogoUrl: string;
 	mainLogoAlt: string;
+	mainLogoSize: number;
+	headerLogoRounded: boolean;
 	isActive: boolean;
 };
 
 type BusinessLogoForm = {
 	id?: string;
 	business_line: BusinessLineSlug;
-	section: LogoSection;
+	section: AnyLogoSection;
 	name: string;
 	image_url: string;
 	alt_text: string;
 	display_order: number;
+	display_width: number;
+	display_height: number;
 	is_active: boolean;
 };
 
@@ -54,6 +57,8 @@ const EMPTY_BUSINESS_LOGO: BusinessLogoForm = {
 	image_url: '',
 	alt_text: '',
 	display_order: 0,
+	display_width: 150,
+	display_height: 64,
 	is_active: true,
 };
 
@@ -71,16 +76,20 @@ export default function SettingsPage() {
 		siteDescription: 'Premium services across multiple business lines',
 		mainLogoUrl: '/logo_icon.png',
 		mainLogoAlt: 'Kygoo Group',
+		mainLogoSize: 40,
+		headerLogoRounded: true,
 		isActive: true,
 	});
 	const [siteBrandingLoading, setSiteBrandingLoading] = useState(true);
 	const [siteBrandingSaving, setSiteBrandingSaving] = useState(false);
+	const [siteBrandingUploading, setSiteBrandingUploading] = useState(false);
 	const [siteBrandingError, setSiteBrandingError] = useState('');
 
 	const [businessLogos, setBusinessLogos] = useState<BusinessLineLogo[]>([]);
 	const [businessLogoForm, setBusinessLogoForm] = useState<BusinessLogoForm>(EMPTY_BUSINESS_LOGO);
 	const [businessLoading, setBusinessLoading] = useState(true);
 	const [businessSaving, setBusinessSaving] = useState(false);
+	const [businessUploading, setBusinessUploading] = useState(false);
 	const [businessError, setBusinessError] = useState('');
 	const [businessSuccess, setBusinessSuccess] = useState('');
 
@@ -111,6 +120,11 @@ export default function SettingsPage() {
 					siteDescription: brandingResponse.data.site_description,
 					mainLogoUrl: brandingResponse.data.main_logo_url,
 					mainLogoAlt: brandingResponse.data.main_logo_alt,
+					mainLogoSize: brandingResponse.data.main_logo_size || 40,
+					headerLogoRounded:
+						typeof brandingResponse.data.header_logo_rounded === 'boolean'
+							? brandingResponse.data.header_logo_rounded
+							: true,
 					isActive: brandingResponse.data.is_active,
 				});
 			} else {
@@ -143,6 +157,8 @@ export default function SettingsPage() {
 			site_description: siteBranding.siteDescription.trim(),
 			main_logo_url: siteBranding.mainLogoUrl.trim(),
 			main_logo_alt: siteBranding.mainLogoAlt.trim(),
+			main_logo_size: siteBranding.mainLogoSize,
+			header_logo_rounded: siteBranding.headerLogoRounded,
 			is_active: siteBranding.isActive,
 		};
 
@@ -155,6 +171,9 @@ export default function SettingsPage() {
 				siteDescription: response.data.site_description,
 				mainLogoUrl: response.data.main_logo_url,
 				mainLogoAlt: response.data.main_logo_alt,
+				mainLogoSize: response.data.main_logo_size || 40,
+				headerLogoRounded:
+					typeof response.data.header_logo_rounded === 'boolean' ? response.data.header_logo_rounded : true,
 				isActive: response.data.is_active,
 			});
 		}
@@ -175,8 +194,50 @@ export default function SettingsPage() {
 			image_url: logo.image_url,
 			alt_text: logo.alt_text || '',
 			display_order: logo.display_order,
+			display_width: logo.display_width || 150,
+			display_height: logo.display_height || 64,
 			is_active: logo.is_active,
 		});
+	};
+
+	const handleUploadMainLogo = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) {
+			return;
+		}
+
+		setSiteBrandingUploading(true);
+		setSiteBrandingError('');
+
+		const response = await siteBrandingService.uploadLogo(file);
+		if (response.error || !response.data?.url) {
+			setSiteBrandingError(response.message || response.error || 'Gagal upload logo utama.');
+		} else {
+			setSiteBranding((prev) => ({ ...prev, mainLogoUrl: response.data?.url || prev.mainLogoUrl }));
+		}
+
+		event.target.value = '';
+		setSiteBrandingUploading(false);
+	};
+
+	const handleUploadBusinessLogo = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) {
+			return;
+		}
+
+		setBusinessUploading(true);
+		setBusinessError('');
+
+		const response = await businessLineBrandingService.uploadLogo(file, businessLogoForm.business_line);
+		if (response.error || !response.data?.url) {
+			setBusinessError(response.message || response.error || 'Gagal upload logo lini bisnis.');
+		} else {
+			setBusinessLogoForm((prev) => ({ ...prev, image_url: response.data?.url || prev.image_url }));
+		}
+
+		event.target.value = '';
+		setBusinessUploading(false);
 	};
 
 	const handleSaveBusinessLogo = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -192,6 +253,8 @@ export default function SettingsPage() {
 			image_url: businessLogoForm.image_url.trim(),
 			alt_text: businessLogoForm.alt_text.trim(),
 			display_order: businessLogoForm.display_order,
+			display_width: businessLogoForm.display_width,
+			display_height: businessLogoForm.display_height,
 			is_active: businessLogoForm.is_active,
 		};
 
@@ -290,7 +353,12 @@ export default function SettingsPage() {
 							) : (
 								<>
 									<div className="flex items-center gap-4 rounded-lg border border-slate-800 bg-slate-950/60 p-4">
-										<img src={siteBranding.mainLogoUrl || '/logo_icon.png'} alt={siteBranding.mainLogoAlt} className="h-16 w-16 rounded-xl object-contain bg-white/5 p-2" />
+										<img
+											src={siteBranding.mainLogoUrl || '/logo_icon.png'}
+											alt={siteBranding.mainLogoAlt}
+											className={`object-contain bg-white/5 p-2 ${siteBranding.headerLogoRounded ? 'rounded-full' : 'rounded-xl'}`}
+											style={{ width: `${siteBranding.mainLogoSize}px`, height: `${siteBranding.mainLogoSize}px` }}
+										/>
 										<div>
 											<p className="text-sm text-slate-400">Preview</p>
 											<p className="font-semibold">{siteBranding.siteName}</p>
@@ -319,6 +387,33 @@ export default function SettingsPage() {
 											<span>Main logo alt text</span>
 											<input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={siteBranding.mainLogoAlt} onChange={(event) => setSiteBranding((prev) => ({ ...prev, mainLogoAlt: event.target.value }))} />
 										</label>
+									</div>
+
+									<div className="rounded-lg border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+										<div className="flex items-center justify-between gap-4 flex-wrap">
+											<p className="text-sm text-slate-300">Upload main logo file</p>
+											<label className="px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold cursor-pointer">
+												{siteBrandingUploading ? 'Uploading...' : 'Choose file'}
+												<input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" className="hidden" onChange={handleUploadMainLogo} disabled={siteBrandingUploading} />
+											</label>
+										</div>
+										<p className="text-xs text-slate-500">File akan diupload ke backend dan URL-nya diisi otomatis.</p>
+									</div>
+
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<label className="block text-sm text-slate-300 space-y-2">
+											<span>Header logo size (px)</span>
+											<input type="number" min={24} max={160} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={siteBranding.mainLogoSize} onChange={(event) => setSiteBranding((prev) => ({ ...prev, mainLogoSize: Number(event.target.value) || 40 }))} />
+										</label>
+										<div className="flex items-end justify-between gap-4 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-3">
+											<div>
+												<p className="font-semibold">Header logo rounded</p>
+												<p className="text-xs text-slate-500">Default bentuk bulat untuk logo header kiri.</p>
+											</div>
+											<button type="button" onClick={() => setSiteBranding((prev) => ({ ...prev, headerLogoRounded: !prev.headerLogoRounded }))} className={`w-12 h-6 rounded-full transition-all ${siteBranding.headerLogoRounded ? 'bg-green-500' : 'bg-slate-700'}`}>
+												<motion.div className="w-5 h-5 rounded-full bg-white" animate={{ x: siteBranding.headerLogoRounded ? 22 : 2 }} />
+											</button>
+										</div>
 									</div>
 
 									<div className="flex items-center justify-between gap-4 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-3">
@@ -360,15 +455,27 @@ export default function SettingsPage() {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<label className="block text-sm text-slate-300 space-y-2">
 										<span>Section</span>
-										<select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.section} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, section: event.target.value as LogoSection }))}>
+										<select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.section} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, section: event.target.value as AnyLogoSection }))}>
 											<option value="partner">Our Partner</option>
 											<option value="client">Our Client</option>
+											<option value="header">Header Logo</option>
 										</select>
 									</label>
 									<label className="block text-sm text-slate-300 space-y-2">
 										<span>Name</span>
 										<input className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.name} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, name: event.target.value }))} />
 									</label>
+								</div>
+
+								<div className="rounded-lg border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+									<div className="flex items-center justify-between gap-4 flex-wrap">
+										<p className="text-sm text-slate-300">Upload logo file</p>
+										<label className="px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold cursor-pointer">
+											{businessUploading ? 'Uploading...' : 'Choose file'}
+											<input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" className="hidden" onChange={handleUploadBusinessLogo} disabled={businessUploading} />
+										</label>
+									</div>
+									<p className="text-xs text-slate-500">File disimpan di backend lalu URL diisi otomatis ke field Image URL.</p>
 								</div>
 
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -382,20 +489,29 @@ export default function SettingsPage() {
 									</label>
 								</div>
 
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 									<label className="block text-sm text-slate-300 space-y-2">
 										<span>Sort order</span>
 										<input type="number" className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.display_order} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, display_order: Number(event.target.value) }))} />
 									</label>
-									<div className="flex items-end justify-between gap-4 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-3">
-										<div>
-											<p className="font-semibold">Active</p>
-											<p className="text-xs text-slate-500">Toggle logo aktif atau sembunyikan dari public view.</p>
-										</div>
-										<button type="button" onClick={() => setBusinessLogoForm((prev) => ({ ...prev, is_active: !prev.is_active }))} className={`w-12 h-6 rounded-full transition-all ${businessLogoForm.is_active ? 'bg-green-500' : 'bg-slate-700'}`}>
-											<motion.div className="w-5 h-5 rounded-full bg-white" animate={{ x: businessLogoForm.is_active ? 22 : 2 }} />
-										</button>
+									<label className="block text-sm text-slate-300 space-y-2">
+										<span>Width (px)</span>
+										<input type="number" min={24} max={1000} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.display_width} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, display_width: Number(event.target.value) || 150 }))} />
+									</label>
+									<label className="block text-sm text-slate-300 space-y-2">
+										<span>Height (px)</span>
+										<input type="number" min={24} max={1000} className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={businessLogoForm.display_height} onChange={(event) => setBusinessLogoForm((prev) => ({ ...prev, display_height: Number(event.target.value) || 64 }))} />
+									</label>
+								</div>
+
+								<div className="flex items-end justify-between gap-4 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-3">
+									<div>
+										<p className="font-semibold">Active</p>
+										<p className="text-xs text-slate-500">Toggle logo aktif atau sembunyikan dari public view.</p>
 									</div>
+									<button type="button" onClick={() => setBusinessLogoForm((prev) => ({ ...prev, is_active: !prev.is_active }))} className={`w-12 h-6 rounded-full transition-all ${businessLogoForm.is_active ? 'bg-green-500' : 'bg-slate-700'}`}>
+										<motion.div className="w-5 h-5 rounded-full bg-white" animate={{ x: businessLogoForm.is_active ? 22 : 2 }} />
+									</button>
 								</div>
 
 								<div className="grid grid-cols-2 gap-3">
@@ -413,13 +529,19 @@ export default function SettingsPage() {
 									filteredBusinessLogos.map((logo) => (
 										<div key={logo.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 flex items-start justify-between gap-4">
 											<div className="flex items-center gap-4">
-												<img src={logo.image_url} alt={logo.alt_text || logo.name} className="h-16 w-32 rounded-lg object-contain bg-white/5 p-2" />
+												<img
+													src={logo.image_url}
+													alt={logo.alt_text || logo.name}
+													className="rounded-lg object-contain bg-white/5 p-2"
+													style={{ width: `${logo.display_width || 150}px`, height: `${logo.display_height || 64}px` }}
+												/>
 												<div>
 													<div className="flex items-center gap-2">
 														<h3 className="font-semibold">{logo.name}</h3>
 														{!logo.is_active && <span className="text-xs px-2 py-1 rounded-full bg-slate-700 text-slate-300">Inactive</span>}
 													</div>
-													<p className="text-sm text-slate-400">{logo.section === 'partner' ? 'Our Partner' : 'Our Client'}</p>
+													<p className="text-sm text-slate-400">{logo.section === 'partner' ? 'Our Partner' : logo.section === 'client' ? 'Our Client' : 'Header Logo'}</p>
+													<p className="text-xs text-slate-500">Size: {logo.display_width || 150} x {logo.display_height || 64}px</p>
 													<p className="text-xs text-slate-500 break-all">{logo.image_url}</p>
 												</div>
 											</div>

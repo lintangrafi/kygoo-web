@@ -13,6 +13,8 @@ type SiteBranding struct {
 	SiteDescription  string     `gorm:"type:text"`
 	MainLogoURL      string     `gorm:"type:text;not null"`
 	MainLogoAlt      string     `gorm:"type:varchar(255)"`
+	MainLogoSize     int        `gorm:"type:int;default:40"`
+	HeaderLogoRounded bool      `gorm:"type:boolean;default:true"`
 	IsActive         bool       `gorm:"type:boolean;default:true;index"`
 	CreatedAt        time.Time  `gorm:"not null;default:now()"`
 	UpdatedAt        time.Time  `gorm:"not null;default:now()"`

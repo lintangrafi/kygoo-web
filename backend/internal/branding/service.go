@@ -34,6 +34,8 @@ func mapLogoToResponse(logo *models.BusinessLineLogo) *LogoResponse {
 		ImageURL:     logo.ImageURL,
 		AltText:      logo.AltText,
 		DisplayOrder: logo.DisplayOrder,
+		DisplayWidth: logo.DisplayWidth,
+		DisplayHeight: logo.DisplayHeight,
 		IsActive:     logo.IsActive,
 		CreatedAt:    logo.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:    logo.UpdatedAt.Format(time.RFC3339),
@@ -53,7 +55,15 @@ func (s *service) Create(req *CreateLogoRequest) (*LogoResponse, error) {
 		ImageURL:     req.ImageURL,
 		AltText:      req.AltText,
 		DisplayOrder: req.DisplayOrder,
+		DisplayWidth: 150,
+		DisplayHeight: 64,
 		IsActive:     isActive,
+	}
+	if req.DisplayWidth != nil {
+		logo.DisplayWidth = *req.DisplayWidth
+	}
+	if req.DisplayHeight != nil {
+		logo.DisplayHeight = *req.DisplayHeight
 	}
 
 	if err := s.repo.Create(logo); err != nil {
@@ -128,6 +138,12 @@ func (s *service) Update(id uuid.UUID, req *UpdateLogoRequest) (*LogoResponse, e
 	}
 	if req.DisplayOrder != nil {
 		logo.DisplayOrder = *req.DisplayOrder
+	}
+	if req.DisplayWidth != nil {
+		logo.DisplayWidth = *req.DisplayWidth
+	}
+	if req.DisplayHeight != nil {
+		logo.DisplayHeight = *req.DisplayHeight
 	}
 	if req.IsActive != nil {
 		logo.IsActive = *req.IsActive

@@ -65,6 +65,7 @@ export default function DigitalPage() {
 
   return (
     <BusinessLinePageTemplate
+      businessSlug="digital"
       businessName="Digital"
       accent="#00d084"
       secondaryAccent="#00e5ff"

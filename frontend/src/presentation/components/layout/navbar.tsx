@@ -51,7 +51,11 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
                     <img
                         src={branding?.main_logo_url || '/logo_icon.png'}
                         alt={branding?.main_logo_alt || 'Kygoo Group'}
-                        className="h-8 w-8 rounded-lg object-contain dark:invert"
+                        className={`object-contain dark:invert ${branding?.header_logo_rounded === false ? 'rounded-lg' : 'rounded-full'}`}
+                        style={{
+                            width: `${branding?.main_logo_size || 32}px`,
+                            height: `${branding?.main_logo_size || 32}px`,
+                        }}
                     />
                     <span className="text-xl font-bold">{branding?.site_name || 'Kygoo Group'}</span>
                 </div>

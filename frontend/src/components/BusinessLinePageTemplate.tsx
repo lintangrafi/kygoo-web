@@ -1,8 +1,10 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { businessLineBrandingService } from '@/src/services';
 
 export type BusinessLineStat = {
   label: string;
@@ -42,6 +44,7 @@ type PricingPackage = {
 };
 
 type BusinessLinePageTemplateProps = {
+  businessSlug: 'studio' | 'photobooth' | 'digital' | 'coffee';
   businessName: string;
   accent: string;
   secondaryAccent: string;
@@ -88,6 +91,7 @@ function formatDate(day?: number, month?: number, year?: string): string {
 }
 
 export function BusinessLinePageTemplate({
+  businessSlug,
   businessName,
   accent,
   secondaryAccent,
@@ -105,6 +109,45 @@ export function BusinessLinePageTemplate({
   closingLead,
   showTechBackground = true,
 }: BusinessLinePageTemplateProps) {
+  const [headerLogo, setHeaderLogo] = useState<{
+    url: string;
+    alt: string;
+    width: number;
+    height: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadHeaderLogo = async () => {
+      const response = await businessLineBrandingService.listLogos(businessSlug, false);
+      if (!mounted || response.error || !response.data || response.data.length === 0) {
+        return;
+      }
+
+      const lineHeaderLogo = response.data
+        .filter((logo) => logo.section === 'header')
+        .sort((a, b) => a.display_order - b.display_order)[0];
+
+      if (!lineHeaderLogo) {
+        return;
+      }
+
+      setHeaderLogo({
+        url: lineHeaderLogo.image_url,
+        alt: lineHeaderLogo.alt_text || lineHeaderLogo.name,
+        width: lineHeaderLogo.display_width || 42,
+        height: lineHeaderLogo.display_height || 42,
+      });
+    };
+
+    void loadHeaderLogo();
+
+    return () => {
+      mounted = false;
+    };
+  }, [businessSlug]);
+
   const orderedProjects = [...projects].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
   return (
@@ -123,8 +166,18 @@ export function BusinessLinePageTemplate({
 
       <nav className="border-b border-slate-800/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center relative z-10">
-          <Link href="/" className="text-xl font-bold font-mono">
-            Kygoo <span style={{ color: accent }}>{businessName}</span>
+          <Link href="/" className="text-xl font-bold font-mono inline-flex items-center gap-3">
+            {headerLogo ? (
+              <img
+                src={headerLogo.url}
+                alt={headerLogo.alt}
+                className="rounded-full object-contain border border-white/10 bg-white/5 p-1"
+                style={{ width: `${headerLogo.width}px`, height: `${headerLogo.height}px` }}
+              />
+            ) : null}
+            <span>
+              Kygoo <span style={{ color: accent }}>{businessName}</span>
+            </span>
           </Link>
           <Link
             href="/contact"

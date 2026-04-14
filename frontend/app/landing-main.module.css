@@ -76,10 +76,32 @@
   padding-bottom: 0.9rem;
 }
 
+.brandWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .brand {
   letter-spacing: 0.22em;
   font-size: 0.82rem;
   font-weight: 700;
+}
+
+.brandLogoCircle,
+.brandLogoRounded {
+  display: block;
+  object-fit: contain;
+  background: color-mix(in oklch, var(--bg) 76%, transparent);
+  border: 1px solid color-mix(in oklch, var(--line-accent) 30%, transparent);
+}
+
+.brandLogoCircle {
+  border-radius: 999px;
+}
+
+.brandLogoRounded {
+  border-radius: 0.9rem;
 }
 
 .quickNav {

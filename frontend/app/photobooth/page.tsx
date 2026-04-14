@@ -85,6 +85,7 @@ export default function PhotoboothPage() {
 
   return (
     <BusinessLinePageTemplate
+      businessSlug="photobooth"
       businessName="Photobooth"
       accent="#ff006e"
       secondaryAccent="#f472b6"

@@ -65,6 +65,7 @@ export default function StudioPage() {
 
   return (
     <BusinessLinePageTemplate
+      businessSlug="studio"
       businessName="Studio"
       accent="#d4af37"
       secondaryAccent="#f59e0b"
