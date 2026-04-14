@@ -4,17 +4,21 @@ import { useEffect, useState } from 'react';
 import { BUSINESS_LINE_MAP } from '@/lib/business-lines';
 import { fetchProjectsByLine } from '@/lib/business-projects-client';
 import { getDefaultBusinessLinePricing, mapPricingApiItemsToCards, sortPricingCards, type BusinessLinePricingCard } from '@/lib/business-line-pricing';
-import { businessLinePricingService } from '@/src/services';
+import { businessLinePricingService, businessLineBrandingService } from '@/src/services';
+import { BusinessLineLogoMarquee } from '@/src/components/BusinessLineLogoMarquee';
+import { getDefaultPhotoboothBrandLogos, groupBrandLogos } from '@/lib/photobooth-brand-logos';
 import {
   BusinessLinePageTemplate,
   type BusinessLineProject,
   type BusinessLineService,
   type BusinessLineStat,
 } from '@/src/components/BusinessLinePageTemplate';
+import { type BusinessLineLogo } from '@/src/services';
 
 export default function PhotoboothPage() {
   const [photoboothProjects, setPhotoboothProjects] = useState<BusinessLineProject[]>(BUSINESS_LINE_MAP.photobooth.projects);
   const [pricingPackages, setPricingPackages] = useState<BusinessLinePricingCard[]>(getDefaultBusinessLinePricing('photobooth'));
+  const [brandLogos, setBrandLogos] = useState<BusinessLineLogo[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -26,6 +30,22 @@ export default function PhotoboothPage() {
     };
 
     hydrateProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const hydrateBrandLogos = async () => {
+      const response = await businessLineBrandingService.listLogos('photobooth');
+      if (!mounted || response.error || !response.data) return;
+      setBrandLogos(response.data);
+    };
+
+    hydrateBrandLogos();
 
     return () => {
       mounted = false;
@@ -75,6 +95,12 @@ export default function PhotoboothPage() {
       stats={stats}
       services={services}
       projects={photoboothProjects}
+      afterHero={
+        <BusinessLineLogoMarquee
+          groups={brandLogos.length > 0 ? groupBrandLogos(brandLogos) : getDefaultPhotoboothBrandLogos()}
+          accent="#ff006e"
+        />
+      }
       pricingTitle="Photobooth Pricelist"
       pricingPackages={pricingPackages}
       closingTitle="Ready to make your event feel more alive?"

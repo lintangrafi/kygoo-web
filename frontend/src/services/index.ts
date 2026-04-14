@@ -5,6 +5,18 @@ export { photoboothService, type PhotoboothEvent, type PhotoboothPackage } from 
 export { digitalService, type DigitalProject, type PortfolioItem } from './digital.service';
 export { coffeeService, type MenuItem, type CoffeeOrder, type CoffeeEvent } from './coffee.service';
 export {
+	siteBrandingService,
+	type SiteBranding,
+	type UpdateSiteBrandingRequest,
+} from './site-branding.service';
+export {
+	businessLineBrandingService,
+	type BusinessLineLogo,
+	type CreateBusinessLineLogoRequest,
+	type UpdateBusinessLineLogoRequest,
+	type LogoSection,
+} from './branding.service';
+export {
 	businessLinePricingService,
 	type BusinessLinePackage,
 	type CreateBusinessLinePackageRequest,

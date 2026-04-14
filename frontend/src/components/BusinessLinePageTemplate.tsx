@@ -1,5 +1,6 @@
 'use client';
 
+import { type ReactNode } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -53,6 +54,7 @@ type BusinessLinePageTemplateProps = {
   projects: BusinessLineProject[];
   pricingTitle: string;
   pricingPackages: PricingPackage[];
+  afterHero?: ReactNode;
   closingTitle: string;
   closingLead: string;
   showTechBackground?: boolean;
@@ -98,6 +100,7 @@ export function BusinessLinePageTemplate({
   projects,
   pricingTitle,
   pricingPackages,
+  afterHero,
   closingTitle,
   closingLead,
   showTechBackground = true,
@@ -198,6 +201,8 @@ export function BusinessLinePageTemplate({
           </motion.div>
         </motion.div>
       </section>
+
+      {afterHero}
 
       <motion.section
         id="services"

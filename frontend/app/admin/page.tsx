@@ -106,6 +106,13 @@ export default function AdminDashboard() {
       color: '#f59e0b',
     },
     {
+      title: 'Brand Logos CMS',
+      description: 'Kelola logo partner dan client per lini bisnis.',
+      icon: '🪪',
+      href: '/admin/branding',
+      color: '#ff006e',
+    },
+    {
       title: 'Orders',
       description: 'View and manage customer orders across all business lines',
       icon: '📦',

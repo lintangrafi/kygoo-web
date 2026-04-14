@@ -6,6 +6,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/base-go/backend/internal/auth"
+	"github.com/base-go/backend/internal/sitebranding"
+	"github.com/base-go/backend/internal/branding"
 	"github.com/base-go/backend/internal/businessproject"
 	"github.com/base-go/backend/internal/contact"
 	"github.com/base-go/backend/internal/pricing"
@@ -80,6 +82,32 @@ func New() (*dig.Container, error) {
 	}
 
 	if err := container.Provide(studiocontent.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// branding module
+	if err := container.Provide(branding.NewRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(branding.NewService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(branding.NewHandler); err != nil {
+		return nil, err
+	}
+
+	// site branding module
+	if err := container.Provide(sitebranding.NewRepository); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(sitebranding.NewService); err != nil {
+		return nil, err
+	}
+
+	if err := container.Provide(sitebranding.NewHandler); err != nil {
 		return nil, err
 	}
 
