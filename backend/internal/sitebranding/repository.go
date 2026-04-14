@@ -2,7 +2,6 @@ package sitebranding
 
 import (
 	"github.com/base-go/backend/internal/shared/models"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 

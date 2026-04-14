@@ -15,12 +15,12 @@ import {
 	type UpdateBusinessLineLogoRequest,
 } from '@/src/services';
 import { type BusinessLineSlug } from '@/lib/business-line-pricing';
-import { type LogoSection } from '@/src/services/branding.service';
+import { type AnyLogoSection } from '@/src/services/branding.service';
 
 type LogoFormState = {
 	id?: string;
 	business_line: BusinessLineSlug;
-	section: LogoSection;
+	section: AnyLogoSection;
 	name: string;
 	image_url: string;
 	alt_text: string;
@@ -45,9 +45,10 @@ const BUSINESS_LINES: Array<{ value: BusinessLineSlug; label: string; color: str
 	{ value: 'coffee', label: 'Coffee', color: '#d97706' },
 ];
 
-const SECTIONS: Array<{ value: LogoSection; label: string }> = [
+const SECTIONS: Array<{ value: AnyLogoSection; label: string }> = [
 	{ value: 'partner', label: 'Our Partner' },
 	{ value: 'client', label: 'Our Client' },
+	{ value: 'header', label: 'Header Logo' },
 ];
 
 export default function AdminBrandingPage() {
@@ -217,7 +218,7 @@ export default function AdminBrandingPage() {
 																	<h3 className="font-semibold text-lg">{item.name}</h3>
 																	{!item.is_active && <span className="text-xs px-2 py-1 rounded-full bg-slate-700 text-slate-300">Inactive</span>}
 																</div>
-																<p className="text-sm text-slate-300 mt-1">{item.section === 'partner' ? 'Our Partner' : 'Our Client'}</p>
+																<p className="text-sm text-slate-300 mt-1">{item.section === 'partner' ? 'Our Partner' : item.section === 'client' ? 'Our Client' : 'Header Logo'}</p>
 																<p className="text-xs text-slate-500 mt-1 break-all">{item.image_url}</p>
 															</div>
 														</div>
@@ -248,7 +249,7 @@ export default function AdminBrandingPage() {
 										</label>
 										<label className="block text-sm text-slate-300 space-y-2">
 											<span>Section</span>
-											<select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.section} onChange={(event) => setForm((prev) => ({ ...prev, section: event.target.value as LogoSection }))}>
+											<select className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" value={form.section} onChange={(event) => setForm((prev) => ({ ...prev, section: event.target.value as AnyLogoSection }))}>
 												{SECTIONS.map((section) => <option key={section.value} value={section.value}>{section.label}</option>)}
 											</select>
 										</label>
