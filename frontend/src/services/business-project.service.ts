@@ -1,4 +1,5 @@
 import { apiClient, ApiResponse } from '@/src/lib/api-client';
+import { normalizeMediaUrl } from '@/src/lib/media-url';
 
 export type BusinessLineSlug = 'studio' | 'photobooth' | 'digital' | 'coffee';
 
@@ -66,24 +67,58 @@ class BusinessProjectService {
   private adminBaseUrl = '/v1/admin/business-projects';
   private publicBaseUrl = '/v1/business-projects';
 
+  private normalizeProject(project: BusinessProjectItem): BusinessProjectItem {
+    return {
+      ...project,
+      gallery: (project.gallery || []).map(item => ({
+        ...item,
+        file_url: normalizeMediaUrl(item.file_url),
+      })),
+    };
+  }
+
+  private normalizeProjects(projects: BusinessProjectItem[]): BusinessProjectItem[] {
+    return (projects || []).map(project => this.normalizeProject(project));
+  }
+
   async getProjectsByLine(line: BusinessLineSlug): Promise<ApiResponse<BusinessProjectItem[]>> {
-    return apiClient.get<BusinessProjectItem[]>(`${this.publicBaseUrl}`, {
+    const response = await apiClient.get<BusinessProjectItem[]>(`${this.publicBaseUrl}`, {
       business_line: line,
     });
+
+    if (!response.error && response.data) {
+      response.data = this.normalizeProjects(response.data);
+    }
+
+    return response;
   }
 
   async getAllProjects(includeInactive = true): Promise<ApiResponse<BusinessProjectItem[]>> {
-    return apiClient.get<BusinessProjectItem[]>(`${this.adminBaseUrl}`, {
+    const response = await apiClient.get<BusinessProjectItem[]>(`${this.adminBaseUrl}`, {
       include_inactive: includeInactive,
     });
+
+    if (!response.error && response.data) {
+      response.data = this.normalizeProjects(response.data);
+    }
+
+    return response;
   }
 
   async createProject(payload: CreateBusinessProjectRequest): Promise<ApiResponse<BusinessProjectItem>> {
-    return apiClient.post<BusinessProjectItem>(`${this.adminBaseUrl}`, payload);
+    const response = await apiClient.post<BusinessProjectItem>(`${this.adminBaseUrl}`, payload);
+    if (!response.error && response.data) {
+      response.data = this.normalizeProject(response.data);
+    }
+    return response;
   }
 
   async updateProject(id: string, payload: UpdateBusinessProjectRequest): Promise<ApiResponse<BusinessProjectItem>> {
-    return apiClient.put<BusinessProjectItem>(`${this.adminBaseUrl}/${id}`, payload);
+    const response = await apiClient.put<BusinessProjectItem>(`${this.adminBaseUrl}/${id}`, payload);
+    if (!response.error && response.data) {
+      response.data = this.normalizeProject(response.data);
+    }
+    return response;
   }
 
   async deleteProject(id: string): Promise<ApiResponse<void>> {
@@ -98,7 +133,11 @@ class BusinessProjectService {
   }
 
   async getProjectDetail(id: string): Promise<ApiResponse<BusinessProjectItem>> {
-    return apiClient.get<BusinessProjectItem>(`${this.publicBaseUrl}/${id}`);
+    const response = await apiClient.get<BusinessProjectItem>(`${this.publicBaseUrl}/${id}`);
+    if (!response.error && response.data) {
+      response.data = this.normalizeProject(response.data);
+    }
+    return response;
   }
 
   async uploadProjectGallery(id: string, files: File[]): Promise<ApiResponse<BusinessProjectGalleryItem[]>> {
@@ -115,6 +154,13 @@ class BusinessProjectService {
           },
         }
       );
+
+      if (!response.data.error && response.data.data) {
+        response.data.data = response.data.data.map(item => ({
+          ...item,
+          file_url: normalizeMediaUrl(item.file_url),
+        }));
+      }
 
       return response.data;
     } catch (error: any) {

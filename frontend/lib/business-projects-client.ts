@@ -1,4 +1,5 @@
 import type { BusinessProject } from '@/lib/business-lines';
+import { normalizeMediaUrl } from '@/src/lib/media-url';
 
 type BackendEnvelope<T> = {
   code?: number;
@@ -20,6 +21,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/a
 
 function sortGallery(projects: BusinessProject[]): BusinessProject[] {
   return [...projects].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+}
+
+function normalizeProjectsMedia(projects: BusinessProject[]): BusinessProject[] {
+  return projects.map(project => ({
+    ...project,
+    gallery: (project.gallery || []).map(item => ({
+      ...item,
+      file_url: normalizeMediaUrl(item.file_url),
+    })),
+  }));
 }
 
 export async function fetchAllProjectsMap(): Promise<ProjectMap> {
@@ -53,7 +64,7 @@ export async function fetchProjectsByLine(
       return [];
     }
 
-    return sortGallery(json.data);
+    return sortGallery(normalizeProjectsMedia(json.data));
   } catch {
     return [];
   }
