@@ -43,6 +43,16 @@ function getSessionLabel(businessLine: BusinessLineSlug, sortOrder: number): str
   return businessLine === 'photobooth' ? `Session ${sortOrder}` : `sort ${sortOrder}`;
 }
 
+function isVideoFile(url: string, fileName?: string): boolean {
+  const source = `${fileName || ''} ${url}`.toLowerCase();
+  return source.includes('.mp4');
+}
+
+function isGifFile(url: string, fileName?: string): boolean {
+  const source = `${fileName || ''} ${url}`.toLowerCase();
+  return source.includes('.gif');
+}
+
 export default function AdminBusinessProjectsPage() {
   const [selectedLine, setSelectedLine] = useState<BusinessLineSlug>('studio');
   const [projects, setProjects] = useState<BusinessProjectItem[]>([]);
@@ -540,145 +550,183 @@ export default function AdminBusinessProjectsPage() {
                 <p className="mt-4 text-sm text-slate-400">Belum ada project untuk lini bisnis ini.</p>
               ) : (
                 <div className="mt-4 space-y-3">
-                  {projects.map(project => (
-                    <motion.article
-                      key={project.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="rounded-lg border border-slate-800 bg-slate-950/70 p-4"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="font-semibold">{project.name}</h3>
-                        <div className="flex gap-2 text-xs">
-                          <span className="rounded bg-slate-800 px-2 py-1">{formatDate(project.day, project.month, project.year)}</span>
-                          <span className="rounded bg-slate-800 px-2 py-1">{getSessionLabel(project.business_line, project.sort_order)}</span>
-                          <span className="rounded bg-slate-800 px-2 py-1">
-                            {project.is_active ? 'active' : 'inactive'}
-                          </span>
-                        </div>
-                      </div>
-                      {project.event_location ? (
-                        <p className="mt-2 text-xs uppercase tracking-[0.12em] text-slate-400">Lokasi: {project.event_location}</p>
-                      ) : null}
-                      <p className="mt-2 text-sm text-slate-300">{project.impact}</p>
-                      <div className="mt-3 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
-                        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Project Gallery</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Upload file langsung dari device (jpg/jpeg/png/webp).
-                        </p>
+                  {projects.map(project => {
+                    const isExpanded = editingId === project.id;
+                    const impactPreview = project.impact.length > 120 ? `${project.impact.slice(0, 120)}...` : project.impact;
 
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            multiple
-                            onChange={event => onFilesSelected(project.id, event.target.files)}
-                            className="text-xs text-slate-300 file:mr-3 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white"
-                          />
+                    return (
+                      <motion.article
+                        key={project.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`rounded-lg border bg-slate-950/70 p-4 ${isExpanded ? 'border-cyan-700/70' : 'border-slate-800'}`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <h3 className="font-semibold">{project.name}</h3>
+                            {project.event_location ? (
+                              <p className="mt-1 text-[11px] uppercase tracking-[0.12em] text-slate-400">Lokasi: {project.event_location}</p>
+                            ) : null}
+                          </div>
+                          <div className="flex gap-2 text-xs">
+                            <span className="rounded bg-slate-800 px-2 py-1">{formatDate(project.day, project.month, project.year)}</span>
+                            <span className="rounded bg-slate-800 px-2 py-1">{getSessionLabel(project.business_line, project.sort_order)}</span>
+                            <span className="rounded bg-slate-800 px-2 py-1">{project.is_active ? 'active' : 'inactive'}</span>
+                            {isExpanded ? <span className="rounded bg-cyan-600/30 px-2 py-1 text-cyan-300">editing</span> : null}
+                          </div>
+                        </div>
+
+                        <p className="mt-2 text-sm text-slate-300">{isExpanded ? project.impact : impactPreview}</p>
+
+                        {!isExpanded ? (
+                          <p className="mt-2 text-xs text-slate-500">Detail galeri ditutup untuk performa. Klik Edit untuk membuka project ini.</p>
+                        ) : (
+                          <div className="mt-3 rounded-lg border border-slate-800 bg-slate-900/40 p-3">
+                            <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Project Gallery</p>
+                            <p className="mt-1 text-xs text-slate-500">Upload file langsung dari device (jpg/jpeg/png/webp/gif/mp4).</p>
+
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif,video/mp4"
+                                multiple
+                                onChange={event => onFilesSelected(project.id, event.target.files)}
+                                className="text-xs text-slate-300 file:mr-3 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white"
+                              />
+                              <button
+                                onClick={() => onUploadGallery(project.id)}
+                                disabled={uploadingProjectId === project.id}
+                                className="rounded border border-cyan-700 px-3 py-1 text-xs font-semibold text-cyan-300 disabled:opacity-60"
+                              >
+                                {uploadingProjectId === project.id ? 'Uploading...' : 'Upload File'}
+                              </button>
+                            </div>
+
+                            {project.gallery?.length ? (
+                              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {[...project.gallery]
+                                  .sort((a, b) => {
+                                    if (a.is_cover && !b.is_cover) return -1;
+                                    if (!a.is_cover && b.is_cover) return 1;
+                                    return a.sort_order - b.sort_order;
+                                  })
+                                  .map((media: BusinessProjectGalleryItem) => (
+                                    <article
+                                      key={media.id}
+                                      draggable
+                                      onDragStart={() => onGalleryDragStart(project.id, media.id)}
+                                      onDragOver={event => event.preventDefault()}
+                                      onDrop={() => onGalleryDrop(project, media.id)}
+                                      onDragEnd={() => setDraggingGalleryItem(null)}
+                                      className={`rounded border border-slate-700 bg-slate-950/70 p-2 transition ${draggingGalleryItem?.mediaId === media.id ? 'opacity-60' : ''}`}
+                                    >
+                                      <div className="mb-2 flex items-center justify-end gap-2">
+                                        {isVideoFile(media.file_url, media.file_name) ? (
+                                          <span className="rounded bg-violet-500/20 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-violet-200">
+                                            Video
+                                          </span>
+                                        ) : null}
+                                        {isGifFile(media.file_url, media.file_name) ? (
+                                          <span className="rounded bg-fuchsia-500/20 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-fuchsia-200">
+                                            GIF
+                                          </span>
+                                        ) : null}
+                                      </div>
+                                      {isVideoFile(media.file_url, media.file_name) ? (
+                                        <video
+                                          src={media.file_url}
+                                          className="h-24 w-full rounded bg-black object-cover"
+                                          muted
+                                          loop
+                                          playsInline
+                                          controls
+                                        />
+                                      ) : (
+                                        <img src={media.file_url} alt="Photo" className="h-24 w-full rounded object-cover" />
+                                      )}
+                                      <div className="mt-2 flex items-center justify-end gap-2">
+                                        {media.is_cover ? <span className="rounded bg-cyan-500/20 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-cyan-300">Cover</span> : null}
+                                      </div>
+                                      <label className="mt-2 block text-[10px] text-slate-400">
+                                        Sort
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          value={gallerySortValues[media.id] ?? media.sort_order}
+                                          onChange={event => onGallerySortChange(media.id, event.target.value)}
+                                          className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-white"
+                                        />
+                                      </label>
+                                      <button
+                                        onClick={() => onSaveGallerySort(project.id, media.id)}
+                                        disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
+                                        className="mt-2 w-full rounded border border-cyan-700 px-2 py-1 text-[10px] font-semibold text-cyan-300 disabled:opacity-60"
+                                      >
+                                        {gallerySortSavingId === media.id || gallerySortSavingId === project.id ? 'Menyimpan...' : 'Simpan Urutan'}
+                                      </button>
+                                      <div className="mt-2 grid grid-cols-2 gap-2">
+                                        <button
+                                          onClick={() => onMoveGalleryItem(project, media.id, 'up')}
+                                          disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
+                                          className="rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-200 disabled:opacity-60"
+                                        >
+                                          Naik
+                                        </button>
+                                        <button
+                                          onClick={() => onMoveGalleryItem(project, media.id, 'down')}
+                                          disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
+                                          className="rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-200 disabled:opacity-60"
+                                        >
+                                          Turun
+                                        </button>
+                                      </div>
+                                      <button
+                                        onClick={() => onSetCover(project.id, media.id)}
+                                        disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id || media.is_cover}
+                                        className="mt-2 w-full rounded border border-amber-700 px-2 py-1 text-[10px] font-semibold text-amber-300 disabled:opacity-60"
+                                      >
+                                        {media.is_cover ? 'Cover Aktif' : 'Jadikan Cover'}
+                                      </button>
+                                      <button
+                                        onClick={() => onDeleteGalleryItem(project.id, media.id)}
+                                        className="mt-2 rounded border border-rose-700 px-2 py-1 text-[10px] font-semibold text-rose-300"
+                                      >
+                                        Hapus Foto
+                                      </button>
+                                    </article>
+                                  ))}
+                              </div>
+                            ) : (
+                              <p className="mt-3 text-xs text-slate-500">Belum ada foto pada galeri project ini.</p>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-3 flex gap-2">
+                          <button onClick={() => onEdit(project)} className="rounded border border-slate-600 px-3 py-1 text-xs font-semibold">
+                            Edit
+                          </button>
+                          {isExpanded ? (
+                            <button
+                              onClick={() => {
+                                setEditingId(null);
+                                setForm(emptyForm(selectedLine));
+                              }}
+                              className="rounded border border-slate-600 px-3 py-1 text-xs font-semibold"
+                            >
+                              Tutup
+                            </button>
+                          ) : null}
                           <button
-                            onClick={() => onUploadGallery(project.id)}
-                            disabled={uploadingProjectId === project.id}
-                            className="rounded border border-cyan-700 px-3 py-1 text-xs font-semibold text-cyan-300 disabled:opacity-60"
+                            onClick={() => onDelete(project.id)}
+                            className="rounded border border-rose-700 px-3 py-1 text-xs font-semibold text-rose-300"
                           >
-                            {uploadingProjectId === project.id ? 'Uploading...' : 'Upload File'}
+                            Delete
                           </button>
                         </div>
-
-                        {project.gallery?.length ? (
-                          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                            {[...project.gallery]
-                              .sort((a, b) => {
-                                if (a.is_cover && !b.is_cover) return -1;
-                                if (!a.is_cover && b.is_cover) return 1;
-                                return a.sort_order - b.sort_order;
-                              })
-                              .map((media: BusinessProjectGalleryItem) => (
-                              <article
-                                key={media.id}
-                                draggable
-                                onDragStart={() => onGalleryDragStart(project.id, media.id)}
-                                onDragOver={event => event.preventDefault()}
-                                onDrop={() => onGalleryDrop(project, media.id)}
-                                onDragEnd={() => setDraggingGalleryItem(null)}
-                                className={`rounded border border-slate-700 bg-slate-950/70 p-2 transition ${draggingGalleryItem?.mediaId === media.id ? 'opacity-60' : ''}`}
-                              >
-                                <img
-                                  src={media.file_url}
-                                  alt={`Photo`}
-                                  className="h-24 w-full rounded object-cover"
-                                />
-                                <div className="mt-2 flex items-center justify-end gap-2">
-                                  {media.is_cover && <span className="rounded bg-cyan-500/20 px-2 py-1 text-[10px] uppercase tracking-[0.12em] text-cyan-300">Cover</span>}
-                                </div>
-                                <label className="mt-2 block text-[10px] text-slate-400">
-                                  Sort
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    value={gallerySortValues[media.id] ?? media.sort_order}
-                                    onChange={event => onGallerySortChange(media.id, event.target.value)}
-                                    className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-2 py-1 text-xs text-white"
-                                  />
-                                </label>
-                                <button
-                                  onClick={() => onSaveGallerySort(project.id, media.id)}
-                                  disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
-                                  className="mt-2 w-full rounded border border-cyan-700 px-2 py-1 text-[10px] font-semibold text-cyan-300 disabled:opacity-60"
-                                >
-                                  {gallerySortSavingId === media.id || gallerySortSavingId === project.id ? 'Menyimpan...' : 'Simpan Urutan'}
-                                </button>
-                                <div className="mt-2 grid grid-cols-2 gap-2">
-                                  <button
-                                    onClick={() => onMoveGalleryItem(project, media.id, 'up')}
-                                    disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
-                                    className="rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-200 disabled:opacity-60"
-                                  >
-                                    Naik
-                                  </button>
-                                  <button
-                                    onClick={() => onMoveGalleryItem(project, media.id, 'down')}
-                                    disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id}
-                                    className="rounded border border-slate-700 px-2 py-1 text-[10px] font-semibold text-slate-200 disabled:opacity-60"
-                                  >
-                                    Turun
-                                  </button>
-                                </div>
-                                <button
-                                  onClick={() => onSetCover(project.id, media.id)}
-                                  disabled={gallerySortSavingId === media.id || gallerySortSavingId === project.id || media.is_cover}
-                                  className="mt-2 w-full rounded border border-amber-700 px-2 py-1 text-[10px] font-semibold text-amber-300 disabled:opacity-60"
-                                >
-                                  {media.is_cover ? 'Cover Aktif' : 'Jadikan Cover'}
-                                </button>
-                                <button
-                                  onClick={() => onDeleteGalleryItem(project.id, media.id)}
-                                  className="mt-2 rounded border border-rose-700 px-2 py-1 text-[10px] font-semibold text-rose-300"
-                                >
-                                  Hapus Foto
-                                </button>
-                              </article>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="mt-3 text-xs text-slate-500">Belum ada foto pada galeri project ini.</p>
-                        )}
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <button
-                          onClick={() => onEdit(project)}
-                          className="rounded border border-slate-600 px-3 py-1 text-xs font-semibold"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDelete(project.id)}
-                          className="rounded border border-rose-700 px-3 py-1 text-xs font-semibold text-rose-300"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </motion.article>
-                  ))}
+                      </motion.article>
+                    );
+                  })}
                 </div>
               )}
             </section>

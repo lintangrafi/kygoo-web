@@ -67,6 +67,8 @@ func saveGalleryFile(r *http.Request, projectID uuid.UUID, fileHeader *multipart
 		".jpeg": true,
 		".png":  true,
 		".webp": true,
+		".gif":  true,
+		".mp4":  true,
 	}
 	if !allowedExt[ext] {
 		return "", "", fmt.Errorf("unsupported file extension for %s", fileHeader.Filename)
