@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,6 +52,97 @@ func publicFileURL(r *http.Request, relativePath string) string {
 	}
 	normalized := strings.ReplaceAll(relativePath, "\\", "/")
 	return fmt.Sprintf("%s://%s/uploads/%s", scheme, r.Host, normalized)
+}
+
+func publicBaseURL(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if forwardedProto := r.Header.Get("X-Forwarded-Proto"); forwardedProto != "" {
+		scheme = forwardedProto
+	}
+	host := strings.TrimSpace(r.Header.Get("X-Forwarded-Host"))
+	if host == "" {
+		host = r.Host
+	}
+	return fmt.Sprintf("%s://%s", scheme, host)
+}
+
+func normalizeUploadsPath(path string) string {
+	if path == "" {
+		return ""
+	}
+	normalized := strings.ReplaceAll(path, "\\", "/")
+	if idx := strings.Index(normalized, "/uploads/"); idx >= 0 {
+		return normalized[idx:]
+	}
+	if strings.HasPrefix(normalized, "uploads/") {
+		return "/" + normalized
+	}
+	return normalized
+}
+
+func normalizeProjectFileURL(r *http.Request, rawURL string) string {
+	rawURL = strings.TrimSpace(rawURL)
+	if rawURL == "" {
+		return rawURL
+	}
+
+	normalizedPath := normalizeUploadsPath(rawURL)
+	if strings.HasPrefix(normalizedPath, "/uploads/") {
+		return publicBaseURL(r) + normalizedPath
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL
+	}
+	if parsed == nil {
+		return rawURL
+	}
+
+	if parsed.IsAbs() || parsed.Host != "" {
+		path := normalizeUploadsPath(parsed.Path)
+		if strings.HasPrefix(path, "/uploads/") {
+			if parsed.RawQuery != "" {
+				path += "?" + parsed.RawQuery
+			}
+			return publicBaseURL(r) + path
+		}
+		return rawURL
+	}
+
+	if strings.HasPrefix(parsed.Path, "business-projects/") {
+		return publicFileURL(r, parsed.Path)
+	}
+
+	if parsed.Path == "" && parsed.Opaque != "" {
+		host, path, splitErr := net.SplitHostPort(parsed.Opaque)
+		if splitErr == nil && host != "" {
+			normalized := normalizeUploadsPath(path)
+			if strings.HasPrefix(normalized, "/uploads/") {
+				return publicBaseURL(r) + normalized
+			}
+		}
+	}
+
+	return rawURL
+}
+
+func normalizeProjectMediaURLs(r *http.Request, project *ProjectResponse) {
+	if project == nil {
+		return
+	}
+	for i := range project.Gallery {
+		project.Gallery[i].FileURL = normalizeProjectFileURL(r, project.Gallery[i].FileURL)
+	}
+}
+
+func normalizeProjectMediaURLsList(r *http.Request, projects []ProjectResponse) {
+	for i := range projects {
+		normalizeProjectMediaURLs(r, &projects[i])
+	}
 }
 
 func saveGalleryFile(r *http.Request, projectID uuid.UUID, fileHeader *multipart.FileHeader) (string, string, error) {
@@ -116,6 +209,8 @@ func (h *Handler) GetProjectsByBusinessLine(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	normalizeProjectMediaURLsList(r, projects)
+
 	response.ResponseJSON(w, http.StatusOK, response.JSON{Status: true, Message: "success", Data: projects})
 }
 
@@ -133,6 +228,8 @@ func (h *Handler) GetProjectByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	normalizeProjectMediaURLs(r, project)
+
 	response.ResponseJSON(w, http.StatusOK, response.JSON{Status: true, Message: "success", Data: project})
 }
 
@@ -145,6 +242,8 @@ func (h *Handler) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	normalizeProjectMediaURLsList(r, projects)
 
 	response.ResponseJSON(w, http.StatusOK, response.JSON{Status: true, Message: "success", Data: projects})
 }
@@ -166,6 +265,8 @@ func (h *Handler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	normalizeProjectMediaURLs(r, project)
 
 	response.ResponseJSON(w, http.StatusCreated, response.JSON{Status: true, Message: "project created", Data: project})
 }
@@ -194,6 +295,8 @@ func (h *Handler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 		response.ResponseError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	normalizeProjectMediaURLs(r, project)
 
 	response.ResponseJSON(w, http.StatusOK, response.JSON{Status: true, Message: "project updated", Data: project})
 }
